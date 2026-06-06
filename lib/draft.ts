@@ -45,8 +45,8 @@ const ATTACK_ROLES = new Set(['CA', 'PE', 'PD', 'MEI']);
 const DEFENSE_ROLES = new Set(['GK', 'ZAG', 'LD', 'LE', 'MEI']);
 
 // Bônus de overall somado antes de calcular a média — torna o time mais forte
-const TRAIT_ATK: Record<string, number> = { matador: 5, camisa10: 5, liso: 3 };
-const TRAIT_DEF: Record<string, number> = { xerife: 5, paredao: 6, liso: 2 };
+const TRAIT_ATK: Record<string, number> = { matador: 3, camisa10: 3, liso: 2 };
+const TRAIT_DEF: Record<string, number> = { xerife: 3, paredao: 4, liso: 1 };
 
 export function calculateTeamOverall(slots: DraftSlot[]): number {
   const valid = slots.filter((s): s is DraftSlot & { player: Player } => s.player !== null);
