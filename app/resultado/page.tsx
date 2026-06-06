@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { saveRanking, getDraft } from '@/lib/api';
 import { calculateRanking, RANK_LABELS, RANK_SUBTITLES } from '@/lib/game-engine';
+import TeamShield from '@/components/TeamShield';
 import type { GameState, Draft } from '@/types';
 
 const GAME_STATE_KEY = 'rtt_game_state';
@@ -154,12 +155,15 @@ export default function ResultadoPage() {
               <div className="absolute inset-0 border border-gold/30" />
               <div className="absolute inset-[3px] border border-gold/10" />
               <div className="relative p-5 flex items-center justify-between">
-                <div>
-                  <div className="text-lg font-black uppercase tracking-wide text-cream">
-                    {destaque.player.name}
-                  </div>
-                  <div className="text-xs uppercase tracking-wide text-cream/40 mt-1">
-                    {destaque.player.team} · {destaque.player.era}
+                <div className="flex items-center gap-3">
+                  <TeamShield team={destaque.player.team} size={40} className="shrink-0 drop-shadow" />
+                  <div>
+                    <div className="text-lg font-black uppercase tracking-wide text-cream">
+                      {destaque.player.name}
+                    </div>
+                    <div className="text-xs uppercase tracking-wide text-cream/40 mt-1">
+                      {destaque.player.team} · {destaque.player.era}
+                    </div>
                   </div>
                 </div>
                 <div className="text-[4.5rem] font-black text-gold leading-none">{destaque.player.overall}</div>

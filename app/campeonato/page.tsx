@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { getPoints } from '@/lib/game-engine';
+import TeamShield from '@/components/TeamShield';
 import type { GameState, LocalMatch, ScheduledMatch } from '@/types';
 
 const GAME_STATE_KEY = 'rtt_game_state';
@@ -83,6 +84,7 @@ function PreGameView({
                 <p className="text-[8px] uppercase tracking-wide text-cream/25">Def</p>
               </div>
             </div>
+            <TeamShield team={next.opponent.team} size={36} className="ml-auto mt-3 drop-shadow" />
           </div>
         </div>
 
@@ -133,11 +135,12 @@ function LastResultCard({ match }: { match: LocalMatch }) {
               {match.opp_goals}
             </p>
           </div>
-          <div className="text-right">
+          <div className="text-right flex flex-col items-end gap-1">
+            <TeamShield team={match.opp_team} size={28} className="drop-shadow" />
             <p className="text-sm font-black uppercase tracking-wide text-cream/80 truncate">
               {match.opp_team}
             </p>
-            <p className="text-[9px] text-cream/30 uppercase tracking-wide mt-0.5">{match.opp_era}</p>
+            <p className="text-[9px] text-cream/30 uppercase tracking-wide">{match.opp_era}</p>
           </div>
         </div>
       </div>
@@ -178,14 +181,17 @@ function NextOpponentCard({ next, round }: { next: ScheduledMatch; round: number
     <div className="relative bg-navy/40">
       <div className="absolute inset-0 border border-cream/[0.07]" />
       <div className="relative px-5 py-4 flex items-center justify-between gap-4">
-        <div className="min-w-0">
-          <p className="text-[9px] uppercase tracking-[0.4em] text-cream/30 mb-1">
-            Rodada {round} · {next.isHome ? 'Em Casa' : 'Fora'}
-          </p>
-          <p className="text-base font-black uppercase tracking-wide text-cream truncate">
-            {next.opponent.team}
-          </p>
-          <p className="text-[10px] text-cream/35 uppercase tracking-wide mt-0.5">{next.opponent.era}</p>
+        <div className="flex items-center gap-3 min-w-0">
+          <TeamShield team={next.opponent.team} size={32} className="shrink-0 drop-shadow" />
+          <div className="min-w-0">
+            <p className="text-[9px] uppercase tracking-[0.4em] text-cream/30 mb-1">
+              Rodada {round} · {next.isHome ? 'Em Casa' : 'Fora'}
+            </p>
+            <p className="text-base font-black uppercase tracking-wide text-cream truncate">
+              {next.opponent.team}
+            </p>
+            <p className="text-[10px] text-cream/35 uppercase tracking-wide mt-0.5">{next.opponent.era}</p>
+          </div>
         </div>
         <div className="flex gap-4 shrink-0">
           <div className="text-center">
@@ -227,6 +233,7 @@ function HistoryAccordion({ matches }: { matches: LocalMatch[] }) {
               <span className={`w-2 h-2 rounded-full shrink-0 ${
                 m.result === 'V' ? 'bg-green/70' : m.result === 'E' ? 'bg-gold/60' : 'bg-coral/70'
               }`} />
+              <TeamShield team={m.opp_team} size={16} className="shrink-0 opacity-80" />
               <span className="flex-1 text-[11px] text-cream/50 truncate uppercase tracking-wide font-bold">
                 {m.opp_team}
               </span>

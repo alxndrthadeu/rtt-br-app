@@ -10,6 +10,7 @@ import {
 } from '@/lib/draft';
 import type { DraftSlot, Player, GameState, Squad } from '@/types';
 import FootballField from '@/components/FootballField';
+import TeamShield from '@/components/TeamShield';
 import { usePlayerUUID } from '@/hooks/usePlayerUUID';
 
 const GAME_STATE_KEY = 'rtt_game_state';
@@ -288,7 +289,8 @@ function DraftContent() {
                 <p className="text-[8px] tracking-[0.5em] uppercase text-coral font-bold mb-1 relative z-10">
                   Clube
                 </p>
-                <p className="text-base font-black text-ink dark:text-cream leading-tight uppercase relative z-10">
+                <TeamShield team={rolledSquad.team} size={40} className="mx-auto mb-1 relative z-10 drop-shadow" />
+                <p className="text-sm font-black text-ink dark:text-cream leading-tight uppercase relative z-10">
                   {rolledSquad.team}
                 </p>
               </div>
