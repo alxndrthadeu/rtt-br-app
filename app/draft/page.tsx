@@ -104,7 +104,6 @@ function DraftContent() {
     setSelectedPlayer(null);
     setCompatibleSlots([]);
     setLastRolledKey(undefined);
-    setRerollsLeft(MAX_REROLLS);
     setPickError(null);
   }
 
@@ -125,7 +124,6 @@ function DraftContent() {
   }
 
   function handleRoll() {
-    setRerollsLeft(MAX_REROLLS);
     doRoll(undefined);
   }
 
@@ -286,40 +284,25 @@ function DraftContent() {
       <div className="flex-1 flex flex-col overflow-hidden min-h-0">
         {rolledSquad ? (
           <>
-            {/* CLUBE + ERA */}
-            <div className="grid grid-cols-2 gap-3 p-4 border-b border-ink/12 dark:border-gold/10 shrink-0">
-              <div className="relative border-2 border-coral p-3 text-center bg-coral/[0.07]">
-                <div className="absolute inset-[3px] border border-coral/35 pointer-events-none" />
-                <p className="text-[8px] tracking-[0.5em] uppercase text-coral font-bold mb-1 relative z-10">
-                  Clube
-                </p>
-                <TeamShield team={rolledSquad.team} size={40} className="mx-auto mb-1 relative z-10 drop-shadow" />
-                <p className="text-lg font-black text-ink dark:text-cream leading-tight tracking-widest relative z-10">
+            {/* Compact squad header */}
+            <div className="flex items-center gap-3 px-4 py-3 border-b border-ink/12 dark:border-gold/10 shrink-0">
+              <TeamShield team={rolledSquad.team} size={32} className="shrink-0 drop-shadow" />
+              <div className="flex-1 min-w-0">
+                <div className="text-base font-black text-ink dark:text-cream tracking-widest leading-none">
                   {getAbrev(rolledSquad.team)}
-                </p>
+                </div>
+                <div className="text-[9px] text-ink/50 dark:text-cream/30 uppercase tracking-[0.3em] mt-0.5">
+                  Era {rolledSquad.era}
+                </div>
               </div>
-              <div className="relative border-2 border-gold p-3 text-center bg-gold/[0.07]">
-                <div className="absolute inset-[3px] border border-gold/35 pointer-events-none" />
-                <p className="text-[8px] tracking-[0.5em] uppercase text-gold font-bold mb-1 relative z-10">
-                  Era
-                </p>
-                <p className="text-base font-black text-ink dark:text-cream leading-tight uppercase relative z-10">
-                  {rolledSquad.era}
-                </p>
-              </div>
-            </div>
-
-            {/* Reroll */}
-            <div className="px-4 pt-3 pb-3 border-b border-ink/10 dark:border-gold/10 shrink-0">
-              <p className="text-[9px] tracking-[0.2em] uppercase text-ink/65 dark:text-cream/30 mb-2">
-                Re-sorteio · {rerollsLeft} restante{rerollsLeft !== 1 ? 's' : ''}
-              </p>
               <button
                 onClick={handleReroll}
                 disabled={rerollsLeft <= 0}
-                className="w-full border border-ink/25 dark:border-gold/40 py-2.5 text-[10px] font-bold uppercase tracking-widest text-ink/75 dark:text-cream/60 hover:border-gold hover:text-ink dark:hover:text-cream disabled:opacity-30 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
+                title={`${rerollsLeft} reroll${rerollsLeft !== 1 ? 's' : ''} restante${rerollsLeft !== 1 ? 's' : ''}`}
+                className="flex flex-col items-center justify-center gap-0.5 w-10 h-10 border border-ink/20 dark:border-gold/30 hover:border-gold hover:text-ink dark:hover:text-cream disabled:opacity-25 disabled:cursor-not-allowed transition-colors shrink-0"
               >
-                ↺ Outra Equipe
+                <span className="text-sm font-bold text-ink/70 dark:text-cream/50 leading-none">↺</span>
+                <span className="text-[8px] font-black text-ink/50 dark:text-cream/30 leading-none">{rerollsLeft}</span>
               </button>
             </div>
 
@@ -399,39 +382,38 @@ function DraftContent() {
           </>
         ) : (
           /* No squad rolled */
-          <div className="flex-1 flex flex-col p-4 gap-4">
-            <div className="grid grid-cols-2 gap-3">
-              <div className="relative border border-ink/20 dark:border-gold/15 p-4 text-center">
-                <p className="text-[8px] tracking-[0.5em] uppercase text-ink/35 dark:text-cream/15 mb-2 font-bold">Clube</p>
-                <p className="text-2xl font-black text-ink/15 dark:text-cream/10">—</p>
-              </div>
-              <div className="relative border border-ink/20 dark:border-gold/15 p-4 text-center">
-                <p className="text-[8px] tracking-[0.5em] uppercase text-ink/35 dark:text-cream/15 mb-2 font-bold">Era</p>
-                <p className="text-2xl font-black text-ink/15 dark:text-cream/10">—</p>
-              </div>
-            </div>
-
+          <div className="flex-1 flex flex-col items-center justify-center px-6 gap-3">
             {pickError && (
-              <div className="border border-coral/60 bg-coral/[0.08] p-3 text-sm text-coral font-bold uppercase tracking-wide">
+              <div className="w-full border border-coral/60 bg-coral/[0.08] p-3 text-sm text-coral font-bold uppercase tracking-wide">
                 {pickError}
               </div>
             )}
-
-            <p className="text-[12px] text-ink/65 dark:text-cream/35 text-center leading-relaxed uppercase tracking-wide">
+            <p className="text-[11px] text-ink/50 dark:text-cream/25 text-center uppercase tracking-[0.2em]">
               {allFilled
                 ? 'Time completo! Confirme a escalação.'
                 : filledCount > 0
-                ? `${filledCount}/11 jogadores — role para continuar.`
-                : 'Role para sortear um clube e uma era histórica.'}
+                ? `${filledCount} / 11 — role para continuar`
+                : 'Role para sortear um clube'}
             </p>
           </div>
         )}
       </div>
 
-      {/* CTA button */}
-      <div className="p-4 border-t border-ink/15 dark:border-gold/10 shrink-0">
-        {!allFilled ? (
-          !rolledSquad ? (
+      {/* CTA button — só aparece sem squad ativo ou quando completo */}
+      {(allFilled || !rolledSquad) && (
+        <div className="p-4 border-t border-ink/15 dark:border-gold/10 shrink-0">
+          {allFilled ? (
+            <div className="relative">
+              <div className="absolute -inset-1 border border-green/40" />
+              <button
+                onClick={handleConfirm}
+                disabled={saving || !playerUUID}
+                className="relative w-full bg-green text-cream font-black text-lg uppercase tracking-[0.2em] py-4 hover:bg-green/90 hover:shadow-[0_0_24px_rgba(27,107,58,0.5)] disabled:opacity-40 active:scale-[0.99] transition-all duration-200 border-2 border-green"
+              >
+                {saving ? 'Salvando...' : 'CONFIRMAR ◆'}
+              </button>
+            </div>
+          ) : (
             <div className="relative">
               <div className="absolute -inset-1 border border-gold/40" />
               <button
@@ -442,27 +424,9 @@ function DraftContent() {
                 ROLAR ◆
               </button>
             </div>
-          ) : (
-            <button
-              onClick={resetSquad}
-              className="w-full border border-ink/30 dark:border-gold/35 text-ink/75 dark:text-cream/60 font-bold text-sm uppercase tracking-widest py-3.5 hover:border-gold dark:hover:border-gold hover:text-ink dark:hover:text-cream hover:shadow-[0_0_16px_rgba(201,168,76,0.2)] transition-all duration-200"
-            >
-              ← Cancelar
-            </button>
-          )
-        ) : (
-          <div className="relative">
-            <div className="absolute -inset-1 border border-green/40" />
-            <button
-              onClick={handleConfirm}
-              disabled={saving || !playerUUID}
-              className="relative w-full bg-green text-cream font-black text-lg uppercase tracking-[0.2em] py-4 hover:bg-green/90 hover:shadow-[0_0_24px_rgba(27,107,58,0.5)] disabled:opacity-40 active:scale-[0.99] transition-all duration-200 border-2 border-green"
-            >
-              {saving ? 'Salvando...' : 'CONFIRMAR ◆'}
-            </button>
-          </div>
-        )}
-      </div>
+          )}
+        </div>
+      )}
     </>
   );
 
