@@ -8,6 +8,7 @@ export interface Player {
   pos_sec1: string | null;
   pos_sec2: string | null;
   estilo: string;
+  trait?: string | null;
 }
 
 export interface Squad {

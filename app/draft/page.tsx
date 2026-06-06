@@ -11,6 +11,7 @@ import {
 import type { DraftSlot, Player, GameState, Squad } from '@/types';
 import FootballField from '@/components/FootballField';
 import TeamShield from '@/components/TeamShield';
+import TraitBadge from '@/components/TraitBadge';
 import { getAbrev } from '@/lib/escudos';
 import { usePlayerUUID } from '@/hooks/usePlayerUUID';
 
@@ -290,9 +291,10 @@ function DraftContent() {
                 <span className="text-ink/45 dark:text-cream/25 text-[10px] w-6 shrink-0 font-bold">
                   #{idx + 1}
                 </span>
-                <span className="flex-1 font-bold text-sm leading-tight text-ink dark:text-cream uppercase">
-                  {p.name}
-                </span>
+                <div className="flex-1 min-w-0">
+                  <div className="font-bold text-sm leading-tight text-ink dark:text-cream uppercase truncate">{p.name}</div>
+                  {p.trait && <TraitBadge trait={p.trait} size="xs" />}
+                </div>
                 <span className="text-[9px] text-ink/60 dark:text-cream/35 uppercase tracking-wide shrink-0">
                   {p.pos_principal}{p.pos_sec1 ? `/${p.pos_sec1}` : ''}
                 </span>

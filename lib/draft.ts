@@ -44,6 +44,10 @@ export function buildEmptySlots(formation: string): DraftSlot[] {
 const ATTACK_ROLES = new Set(['CA', 'PE', 'PD', 'MEI']);
 const DEFENSE_ROLES = new Set(['GK', 'ZAG', 'LD', 'LE', 'MEI']);
 
+// Bônus de overall somado antes de calcular a média — torna o time mais forte
+const TRAIT_ATK: Record<string, number> = { matador: 5, camisa10: 5, liso: 3 };
+const TRAIT_DEF: Record<string, number> = { xerife: 5, paredao: 6, liso: 2 };
+
 export function calculateTeamOverall(slots: DraftSlot[]): number {
   const valid = slots.filter((s): s is DraftSlot & { player: Player } => s.player !== null);
   if (valid.length === 0) return 0;
@@ -58,12 +62,18 @@ export function calculateTeamStats(slots: DraftSlot[]): {
   const filled = slots.filter((s): s is DraftSlot & { player: Player } => s.player !== null);
   if (filled.length === 0) return { overall: 0, attackOvr: 0, defOvr: 0 };
 
-  const avg = (list: typeof filled) =>
-    list.length ? Math.round(list.reduce((s, x) => s + x.player.overall, 0) / list.length) : 0;
+  const atkGroup = filled.filter(s => ATTACK_ROLES.has(s.slot_pos));
+  const defGroup = filled.filter(s => DEFENSE_ROLES.has(s.slot_pos));
+
+  const groupOvr = (group: typeof filled, bonusMap: Record<string, number>) => {
+    if (!group.length) return 0;
+    const total = group.reduce((sum, s) => sum + s.player.overall + (bonusMap[s.player.trait ?? ''] ?? 0), 0);
+    return Math.round(total / group.length);
+  };
 
   return {
-    overall:   avg(filled),
-    attackOvr: avg(filled.filter(s => ATTACK_ROLES.has(s.slot_pos))),
-    defOvr:    avg(filled.filter(s => DEFENSE_ROLES.has(s.slot_pos))),
+    overall:   Math.round(filled.reduce((s, x) => s + x.player.overall, 0) / filled.length),
+    attackOvr: groupOvr(atkGroup, TRAIT_ATK),
+    defOvr:    groupOvr(defGroup, TRAIT_DEF),
   };
 }
