@@ -4,6 +4,7 @@ const TRAIT_CONFIG: Record<string, { label: string; color: string }> = {
   xerife:   { label: 'XERIFE',    color: 'bg-sky-400/15 text-sky-400 border-sky-400/35' },
   liso:     { label: 'LISO',      color: 'bg-violet-400/15 text-violet-400 border-violet-400/35' },
   paredao:  { label: 'PAREDÃO',   color: 'bg-emerald-400/15 text-emerald-400 border-emerald-400/35' },
+  motor:    { label: 'MOTOR',     color: 'bg-amber-600/15 text-amber-500 border-amber-500/35' },
 };
 
 export default function TraitBadge({ trait, size = 'sm' }: { trait: string; size?: 'xs' | 'sm' }) {
