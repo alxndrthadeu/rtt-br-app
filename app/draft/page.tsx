@@ -539,7 +539,7 @@ function DraftContent() {
           Starts below viewport (translate-y-full), slides up when squad is active. */}
       <div
         className={`md:hidden fixed inset-x-0 bottom-0 z-30 flex flex-col bg-parchment dark:bg-navy rounded-t-2xl border-t-2 border-gold/30 shadow-[0_-12px_40px_rgba(0,0,0,0.35)] transition-transform duration-300 ease-out ${rolledSquad && !allFilled && !selectedPlayer ? 'translate-y-0' : 'translate-y-full'}`}
-        style={{ top: '52vh' }}
+        style={{ top: '8vh' }}
       >
         {/* drag handle */}
         <div className="flex justify-center pt-2.5 pb-1 shrink-0">
