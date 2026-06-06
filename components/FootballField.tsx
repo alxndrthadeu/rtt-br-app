@@ -112,6 +112,10 @@ export default function FootballField({ formation, slots, currentSlotIndex, diff
             onClick={() => isClickable && onSlotClick(i)}
             style={{ cursor: isClickable ? 'pointer' : 'default' }}
           >
+            {/* Larger invisible touch target for mobile */}
+            {isCompatible && !filled && (
+              <circle cx={cx} cy={cy} r="22" fill="transparent" />
+            )}
             {/* Pulse ring for compatible slots */}
             {isCompatible && !filled && (
               <circle cx={cx} cy={cy} r="17" fill="rgba(212,75,42,0.15)" stroke="#D44B2A" strokeWidth="1" strokeDasharray="3 2" />

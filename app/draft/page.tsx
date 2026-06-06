@@ -538,7 +538,7 @@ function DraftContent() {
       {/* Mobile bottom sheet — always in DOM, translateY transition for smooth slide.
           Starts below viewport (translate-y-full), slides up when squad is active. */}
       <div
-        className={`md:hidden fixed inset-x-0 bottom-0 z-30 flex flex-col bg-parchment dark:bg-navy rounded-t-2xl border-t-2 border-gold/30 shadow-[0_-12px_40px_rgba(0,0,0,0.35)] transition-transform duration-300 ease-out ${rolledSquad && !allFilled ? 'translate-y-0' : 'translate-y-full'}`}
+        className={`md:hidden fixed inset-x-0 bottom-0 z-30 flex flex-col bg-parchment dark:bg-navy rounded-t-2xl border-t-2 border-gold/30 shadow-[0_-12px_40px_rgba(0,0,0,0.35)] transition-transform duration-300 ease-out ${rolledSquad && !allFilled && !selectedPlayer ? 'translate-y-0' : 'translate-y-full'}`}
         style={{ top: '52vh' }}
       >
         {/* drag handle */}
@@ -548,6 +548,37 @@ function DraftContent() {
 
         {squadHeader}
         {playerSelectionContent}
+      </div>
+
+      {/* Mobile placement bar — slides up when player selected, sheet hides so field is visible */}
+      <div
+        className={`md:hidden fixed bottom-0 inset-x-0 z-30 bg-paper dark:bg-midnight border-t-2 border-coral/70 shadow-[0_-8px_24px_rgba(0,0,0,0.3)] transition-transform duration-300 ease-out ${selectedPlayer && !allFilled ? 'translate-y-0' : 'translate-y-full'}`}
+      >
+        <div className="flex items-center justify-center gap-1.5 pt-2.5 pb-1">
+          <span className="text-[7px] uppercase tracking-[0.45em] text-coral font-black">Toque no campo para posicionar</span>
+          <span className="text-coral text-[10px] leading-none">↑</span>
+        </div>
+        <div className="flex items-center gap-3 px-4 pb-4 pt-1">
+          {selectedPlayer && (
+            <TeamShield team={selectedPlayer.team} size={28} className="shrink-0 opacity-90" />
+          )}
+          <div className="flex-1 min-w-0">
+            <p className="font-black text-sm text-ink dark:text-cream uppercase leading-tight truncate">
+              {selectedPlayer?.name}
+            </p>
+            <p className="text-[9px] text-ink/55 dark:text-cream/35 uppercase tracking-wide mt-0.5">
+              {selectedPlayer?.pos_principal}
+              {selectedPlayer?.pos_sec1 ? `/${selectedPlayer.pos_sec1}` : ''}
+              {difficulty === 'classico' && selectedPlayer ? ` · ${selectedPlayer.overall}` : ''}
+            </p>
+          </div>
+          <button
+            onClick={handleCancelSelection}
+            className="shrink-0 border border-ink/20 dark:border-cream/15 px-3 py-2 text-[9px] uppercase tracking-[0.25em] font-bold text-ink/60 dark:text-cream/40 hover:text-ink dark:hover:text-cream transition-colors"
+          >
+            ← Voltar
+          </button>
+        </div>
       </div>
 
       {/* Mobile: Elenco box score modal */}
