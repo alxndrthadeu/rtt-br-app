@@ -13,6 +13,25 @@ const ESCUDOS: Record<string, string> = {
   'Vasco':        '/escudos/vasco.png',
 };
 
+const ABREVIACOES: Record<string, string> = {
+  'Atlético-MG':  'CAM',
+  'Botafogo':     'BOT',
+  'Corinthians':  'COR',
+  'Cruzeiro':     'CRU',
+  'Flamengo':     'FLA',
+  'Fluminense':   'FLU',
+  'Grêmio':       'GRE',
+  'Internacional':'INT',
+  'Palmeiras':    'PAL',
+  'Santos':       'SAN',
+  'São Paulo':    'SAO',
+  'Vasco':        'VAS',
+};
+
 export function getEscudo(team: string): string | null {
   return ESCUDOS[team] ?? null;
+}
+
+export function getAbrev(team: string): string {
+  return ABREVIACOES[team] ?? team;
 }

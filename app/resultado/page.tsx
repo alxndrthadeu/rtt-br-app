@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { saveRanking, getDraft } from '@/lib/api';
 import { calculateRanking, RANK_LABELS, RANK_SUBTITLES } from '@/lib/game-engine';
 import TeamShield from '@/components/TeamShield';
+import { getAbrev } from '@/lib/escudos';
 import type { GameState, Draft } from '@/types';
 
 const GAME_STATE_KEY = 'rtt_game_state';
@@ -161,8 +162,8 @@ export default function ResultadoPage() {
                     <div className="text-lg font-black uppercase tracking-wide text-cream">
                       {destaque.player.name}
                     </div>
-                    <div className="text-xs uppercase tracking-wide text-cream/40 mt-1">
-                      {destaque.player.team} · {destaque.player.era}
+                    <div className="text-xs uppercase tracking-widest text-cream/40 mt-1">
+                      {getAbrev(destaque.player.team)} · {destaque.player.era}
                     </div>
                   </div>
                 </div>

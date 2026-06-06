@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { getPoints } from '@/lib/game-engine';
 import TeamShield from '@/components/TeamShield';
+import { getAbrev } from '@/lib/escudos';
 import type { GameState, LocalMatch, ScheduledMatch } from '@/types';
 
 const GAME_STATE_KEY = 'rtt_game_state';
@@ -90,7 +91,7 @@ function PreGameView({
 
         {/* Nome do oponente */}
         <div className="relative border-t border-cream/[0.06] px-6 py-3 text-right">
-          <p className="text-base font-black uppercase tracking-wide text-cream">{next.opponent.team}</p>
+          <p className="text-base font-black uppercase tracking-widest text-cream">{getAbrev(next.opponent.team)}</p>
           <p className="text-[10px] text-cream/35 uppercase tracking-wide mt-0.5">{next.opponent.era}</p>
         </div>
       </div>
@@ -137,8 +138,8 @@ function LastResultCard({ match }: { match: LocalMatch }) {
           </div>
           <div className="text-right flex flex-col items-end gap-1">
             <TeamShield team={match.opp_team} size={28} className="drop-shadow" />
-            <p className="text-sm font-black uppercase tracking-wide text-cream/80 truncate">
-              {match.opp_team}
+            <p className="text-sm font-black uppercase tracking-widest text-cream/80">
+              {getAbrev(match.opp_team)}
             </p>
             <p className="text-[9px] text-cream/30 uppercase tracking-wide">{match.opp_era}</p>
           </div>
@@ -187,8 +188,8 @@ function NextOpponentCard({ next, round }: { next: ScheduledMatch; round: number
             <p className="text-[9px] uppercase tracking-[0.4em] text-cream/30 mb-1">
               Rodada {round} · {next.isHome ? 'Em Casa' : 'Fora'}
             </p>
-            <p className="text-base font-black uppercase tracking-wide text-cream truncate">
-              {next.opponent.team}
+            <p className="text-base font-black uppercase tracking-widest text-cream">
+              {getAbrev(next.opponent.team)}
             </p>
             <p className="text-[10px] text-cream/35 uppercase tracking-wide mt-0.5">{next.opponent.era}</p>
           </div>
@@ -234,8 +235,8 @@ function HistoryAccordion({ matches }: { matches: LocalMatch[] }) {
                 m.result === 'V' ? 'bg-green/70' : m.result === 'E' ? 'bg-gold/60' : 'bg-coral/70'
               }`} />
               <TeamShield team={m.opp_team} size={16} className="shrink-0 opacity-80" />
-              <span className="flex-1 text-[11px] text-cream/50 truncate uppercase tracking-wide font-bold">
-                {m.opp_team}
+              <span className="flex-1 text-[11px] text-cream/50 uppercase tracking-widest font-bold">
+                {getAbrev(m.opp_team)}
               </span>
               <span className="text-[9px] text-cream/20 shrink-0">{m.isHome ? 'H' : 'A'}</span>
               <span className="text-[11px] font-black font-mono text-cream/60 shrink-0">

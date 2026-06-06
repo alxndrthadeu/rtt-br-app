@@ -11,6 +11,7 @@ import {
 import type { DraftSlot, Player, GameState, Squad } from '@/types';
 import FootballField from '@/components/FootballField';
 import TeamShield from '@/components/TeamShield';
+import { getAbrev } from '@/lib/escudos';
 import { usePlayerUUID } from '@/hooks/usePlayerUUID';
 
 const GAME_STATE_KEY = 'rtt_game_state';
@@ -242,12 +243,15 @@ function DraftContent() {
             </span>
             {slot.player ? (
               <div className="flex items-center justify-between flex-1 min-w-0">
-                <div className="min-w-0">
-                  <div className="text-sm font-black truncate leading-tight text-ink dark:text-cream uppercase">
-                    {slot.player.name.split(' ').slice(-1)[0]}
-                  </div>
-                  <div className="text-[8px] text-ink/55 dark:text-cream/25 uppercase tracking-wide truncate">
-                    {slot.player.team} · {slot.player.era}
+                <div className="min-w-0 flex items-center gap-1.5">
+                  <TeamShield team={slot.player.team} size={16} className="shrink-0 opacity-90" />
+                  <div className="min-w-0">
+                    <div className="text-sm font-black truncate leading-tight text-ink dark:text-cream uppercase">
+                      {slot.player.name.split(' ').slice(-1)[0]}
+                    </div>
+                    <div className="text-[8px] text-ink/55 dark:text-cream/25 uppercase tracking-wide truncate">
+                      {getAbrev(slot.player.team)} · {slot.player.era}
+                    </div>
                   </div>
                 </div>
                 {difficulty === 'classico' && (
@@ -290,8 +294,8 @@ function DraftContent() {
                   Clube
                 </p>
                 <TeamShield team={rolledSquad.team} size={40} className="mx-auto mb-1 relative z-10 drop-shadow" />
-                <p className="text-sm font-black text-ink dark:text-cream leading-tight uppercase relative z-10">
-                  {rolledSquad.team}
+                <p className="text-lg font-black text-ink dark:text-cream leading-tight tracking-widest relative z-10">
+                  {getAbrev(rolledSquad.team)}
                 </p>
               </div>
               <div className="relative border-2 border-gold p-3 text-center bg-gold/[0.07]">
