@@ -440,10 +440,10 @@ function DraftContent() {
             Mobile: fills entire body (order-1), field floats at top so attacking area is visible above the sheet
             Desktop: center column (order-2), original sizing
         ── */}
-        <div className="order-1 md:order-2 flex-1 md:flex-none md:flex-1 flex items-start justify-center bg-paper/50 dark:bg-midnight pt-4 px-4 md:p-0 md:items-center">
+        <div className="order-1 md:order-2 flex-1 md:flex-none md:flex-1 flex items-start justify-center bg-paper/50 dark:bg-midnight md:p-0 md:items-center">
 
-          {/* Mobile: full-width field, anchored to top so the sheet reveals bottom naturally */}
-          <div className="md:hidden w-full flex flex-col items-center gap-2">
+          {/* Mobile: edge-to-edge, top-anchored — attacking area stays visible above the sheet */}
+          <div className="md:hidden w-full">
             <div style={{ width: '100%', aspectRatio: '200/280' }}>
               <FootballField
                 formation={formation}
@@ -453,9 +453,6 @@ function DraftContent() {
                 compatibleSlots={compatibleSlots}
                 onSlotClick={handleSlotClick}
               />
-            </div>
-            <div className="border border-ink/30 dark:border-gold/40 px-3 py-0.5 text-[9px] font-black text-ink/70 dark:text-cream/40 tracking-widest uppercase">
-              {formation}
             </div>
           </div>
 
@@ -527,40 +524,31 @@ function DraftContent() {
           independent scroll context)
       ════════════════════════════════════════ */}
 
-      {/* Mobile: ROLAR button — fixed at bottom, no squad active */}
-      {!rolledSquad && !allFilled && (
-        <div className="md:hidden fixed bottom-0 inset-x-0 z-20 px-4 py-4 bg-paper/95 dark:bg-midnight/95 border-t border-ink/15 dark:border-gold/10">
-          {pickError && (
-            <div className="mb-3 border border-coral/60 bg-coral/[0.08] p-2.5 text-sm text-coral font-bold uppercase tracking-wide">
-              {pickError}
-            </div>
-          )}
-          {ctaRolar}
-        </div>
-      )}
-
-      {/* Mobile: CONFIRMAR button — fixed at bottom, all filled */}
-      {allFilled && (
-        <div className="md:hidden fixed bottom-0 inset-x-0 z-20 px-4 py-4 bg-paper/95 dark:bg-midnight/95 border-t border-ink/15 dark:border-gold/10">
-          {ctaConfirmar}
-        </div>
-      )}
-
-      {/* Mobile: bottom sheet — slides up when squad is active */}
-      {rolledSquad && !allFilled && (
-        <div
-          className="md:hidden fixed inset-x-0 bottom-0 z-30 flex flex-col bg-parchment dark:bg-navy rounded-t-2xl border-t-2 border-gold/30 shadow-[0_-12px_40px_rgba(0,0,0,0.35)]"
-          style={{ top: '40vh' }}
-        >
-          {/* drag handle */}
-          <div className="flex justify-center pt-2.5 pb-1 shrink-0">
-            <div className="w-8 h-1 rounded-full bg-ink/15 dark:bg-cream/15" />
+      {/* Mobile CTA — always in DOM, opacity transition eliminates flicker.
+          Hidden (opacity-0) while squad sheet is open. */}
+      <div className={`md:hidden fixed bottom-0 inset-x-0 z-20 px-4 py-4 bg-paper/95 dark:bg-midnight/95 border-t border-ink/15 dark:border-gold/10 transition-opacity duration-200 ${rolledSquad && !allFilled ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
+        {pickError && !rolledSquad && (
+          <div className="mb-3 border border-coral/60 bg-coral/[0.08] p-2.5 text-sm text-coral font-bold uppercase tracking-wide">
+            {pickError}
           </div>
+        )}
+        {allFilled ? ctaConfirmar : ctaRolar}
+      </div>
 
-          {squadHeader}
-          {playerSelectionContent}
+      {/* Mobile bottom sheet — always in DOM, translateY transition for smooth slide.
+          Starts below viewport (translate-y-full), slides up when squad is active. */}
+      <div
+        className={`md:hidden fixed inset-x-0 bottom-0 z-30 flex flex-col bg-parchment dark:bg-navy rounded-t-2xl border-t-2 border-gold/30 shadow-[0_-12px_40px_rgba(0,0,0,0.35)] transition-transform duration-300 ease-out ${rolledSquad && !allFilled ? 'translate-y-0' : 'translate-y-full'}`}
+        style={{ top: '52vh' }}
+      >
+        {/* drag handle */}
+        <div className="flex justify-center pt-2.5 pb-1 shrink-0">
+          <div className="w-8 h-1 rounded-full bg-ink/15 dark:bg-cream/15" />
         </div>
-      )}
+
+        {squadHeader}
+        {playerSelectionContent}
+      </div>
 
       {/* Mobile: Elenco box score modal */}
       {showBoxScore && (

@@ -33,7 +33,7 @@ function PreGameView({
   myOvr: number;
 }) {
   return (
-    <div className="flex-1 flex flex-col items-center justify-center px-6 py-12 gap-8">
+    <div className="flex-1 flex flex-col items-center justify-center px-4 py-6 gap-5">
       <div className="text-center">
         <p className="text-[9px] tracking-[0.5em] uppercase text-gold font-bold mb-1">Primeira Partida</p>
         <p className="text-[11px] tracking-[0.3em] uppercase text-cream/30">
@@ -45,7 +45,7 @@ function PreGameView({
       <div className="w-full relative">
         <div className="absolute inset-0 border border-gold/30" />
         <div className="absolute inset-[3px] border border-gold/10" />
-        <div className="relative p-6 grid grid-cols-3 items-center gap-4">
+        <div className="relative p-4 grid grid-cols-3 items-center gap-2">
           {/* Seu time */}
           <div className="text-left">
             <p className="text-[9px] uppercase tracking-[0.35em] text-cream/30 mb-2">Seu Time</p>
@@ -114,9 +114,9 @@ function LastResultCard({ match }: { match: LocalMatch }) {
     <div className="relative bg-navy/60">
       <div className={`absolute inset-0 border-2 ${borderOuter}`} />
       <div className={`absolute inset-[3px] border ${borderInner}`} />
-      <div className="relative p-5">
+      <div className="relative p-3.5">
         {/* Cabeçalho do card */}
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center justify-between mb-3">
           <p className="text-[9px] uppercase tracking-[0.4em] text-cream/30">Rodada {match.rodada}</p>
           <p className={`text-[10px] font-black uppercase tracking-[0.35em] ${resultColor}`}>
             {resultLabel}
@@ -130,7 +130,7 @@ function LastResultCard({ match }: { match: LocalMatch }) {
         <div className="grid grid-cols-3 items-center gap-3">
           <p className="text-sm font-black uppercase tracking-wide text-cream/80 text-left">Seu Time</p>
           <div className="text-center">
-            <p className="text-5xl font-black tracking-tight text-cream leading-none">
+            <p className="text-4xl font-black tracking-tight text-cream leading-none">
               {match.my_goals}
               <span className="text-gold/50 mx-1.5">—</span>
               {match.opp_goals}
@@ -165,8 +165,8 @@ function StatsStrip({ pts, v, e, d, gf, gc }: { pts: number; v: number; e: numbe
       <div className="absolute inset-0 border border-cream/[0.07]" />
       <div className="relative flex divide-x divide-cream/[0.07]">
         {items.map(({ label, value, bold }) => (
-          <div key={label} className="flex-1 py-3 text-center">
-            <p className={`text-base font-black ${bold ? 'text-gold' : 'text-cream/80'}`}>{value}</p>
+          <div key={label} className="flex-1 py-2 text-center">
+            <p className={`text-sm font-black ${bold ? 'text-gold' : 'text-cream/80'}`}>{value}</p>
             <p className="text-[8px] uppercase tracking-[0.3em] text-cream/25 mt-0.5">{label}</p>
           </div>
         ))}
@@ -181,7 +181,7 @@ function NextOpponentCard({ next, round }: { next: ScheduledMatch; round: number
   return (
     <div className="relative bg-navy/40">
       <div className="absolute inset-0 border border-cream/[0.07]" />
-      <div className="relative px-5 py-4 flex items-center justify-between gap-4">
+      <div className="relative px-4 py-3 flex items-center justify-between gap-3">
         <div className="flex items-center gap-3 min-w-0">
           <TeamShield team={next.opponent.team} size={32} className="shrink-0 drop-shadow" />
           <div className="min-w-0">
@@ -196,11 +196,11 @@ function NextOpponentCard({ next, round }: { next: ScheduledMatch; round: number
         </div>
         <div className="flex gap-4 shrink-0">
           <div className="text-center">
-            <p className="text-lg font-black text-coral">{next.opponent.atkOvr}</p>
+            <p className="text-base font-black text-coral">{next.opponent.atkOvr}</p>
             <p className="text-[8px] uppercase tracking-[0.25em] text-cream/25">Atk</p>
           </div>
           <div className="text-center">
-            <p className="text-lg font-black text-green">{next.opponent.defOvr}</p>
+            <p className="text-base font-black text-green">{next.opponent.defOvr}</p>
             <p className="text-[8px] uppercase tracking-[0.25em] text-cream/25">Def</p>
           </div>
         </div>
@@ -311,7 +311,7 @@ export default function CampeonatoPage() {
 
       {/* Conteúdo scrollável */}
       <div className="flex-1 overflow-y-auto pb-32">
-        <div className="max-w-2xl mx-auto w-full px-6">
+        <div className="max-w-2xl mx-auto w-full px-4">
 
           {/* ── Estado 0: pré-jogo ── */}
           {isPreGame && nextScheduled && (
@@ -325,7 +325,7 @@ export default function CampeonatoPage() {
 
           {/* ── Em andamento ── */}
           {!isPreGame && (
-            <div className="py-8 flex flex-col gap-5">
+            <div className="py-4 flex flex-col gap-3">
 
               {/* 1. Resultado da última partida — destaque máximo */}
               {lastMatch && <LastResultCard match={lastMatch} />}
@@ -353,7 +353,7 @@ export default function CampeonatoPage() {
       </div>
 
       {/* Rodapé fixo com CTAs */}
-      <div className="fixed bottom-0 left-0 right-0 bg-midnight border-t border-gold/15 px-6 py-4 flex flex-col gap-2.5">
+      <div className="fixed bottom-0 left-0 right-0 bg-midnight border-t border-gold/15 px-4 py-3 flex flex-col gap-2">
         {finished ? (
           <div className="relative max-w-2xl mx-auto w-full">
             <div className="absolute -inset-1.5 border border-gold/30" />
