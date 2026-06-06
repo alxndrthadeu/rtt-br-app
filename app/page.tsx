@@ -82,6 +82,79 @@ export default function SetupPage() {
           </div>
         </div>
 
+        {/* Como Funciona */}
+        <div className="w-full max-w-[600px] flex flex-col gap-5">
+          <VintageDivider label="Como funciona" />
+
+          <div className="grid grid-cols-1 gap-3">
+
+            {/* Passo 1 */}
+            <div className="relative border border-ink/15 dark:border-gold/15 bg-parchment dark:bg-navy p-4 flex gap-4 items-start">
+              <div className="absolute inset-[3px] border border-ink/[0.04] dark:border-gold/[0.06] pointer-events-none" />
+              <div className="shrink-0 w-8 h-8 border-2 border-gold/70 flex items-center justify-center">
+                <span className="text-sm font-black text-gold leading-none">1</span>
+              </div>
+              <div>
+                <p className="font-black text-sm uppercase tracking-wide text-ink dark:text-cream mb-0.5">
+                  Monte seu esquema
+                </p>
+                <p className="text-[12px] text-ink/65 dark:text-cream/40 leading-relaxed">
+                  Escolha o modo e a formação. A cada rodada, um clube histórico é sorteado — você escolhe 1 jogador daquele elenco para preencher uma posição.
+                </p>
+              </div>
+            </div>
+
+            {/* Passo 2 */}
+            <div className="relative border border-ink/15 dark:border-gold/15 bg-parchment dark:bg-navy p-4 flex gap-4 items-start">
+              <div className="absolute inset-[3px] border border-ink/[0.04] dark:border-gold/[0.06] pointer-events-none" />
+              <div className="shrink-0 w-8 h-8 border-2 border-gold/70 flex items-center justify-center">
+                <span className="text-sm font-black text-gold leading-none">2</span>
+              </div>
+              <div>
+                <p className="font-black text-sm uppercase tracking-wide text-ink dark:text-cream mb-0.5">
+                  Use os rerolls com sabedoria
+                </p>
+                <p className="text-[12px] text-ink/65 dark:text-cream/40 leading-relaxed">
+                  Você tem <strong className="text-ink dark:text-cream/80">3 rerolls</strong> por draft — use para trocar o clube sorteado. Uma vez gastos, não voltam.
+                </p>
+              </div>
+            </div>
+
+            {/* Passo 3 */}
+            <div className="relative border border-ink/15 dark:border-gold/15 bg-parchment dark:bg-navy p-4 flex gap-4 items-start">
+              <div className="absolute inset-[3px] border border-ink/[0.04] dark:border-gold/[0.06] pointer-events-none" />
+              <div className="shrink-0 w-8 h-8 border-2 border-gold/70 flex items-center justify-center">
+                <span className="text-sm font-black text-gold leading-none">3</span>
+              </div>
+              <div>
+                <p className="font-black text-sm uppercase tracking-wide text-ink dark:text-cream mb-0.5">
+                  Traits fazem a diferença
+                </p>
+                <p className="text-[12px] text-ink/65 dark:text-cream/40 leading-relaxed">
+                  Lendas têm traits especiais: <strong className="text-coral">MATADOR</strong> fura defesas, <strong className="text-gold">CAMISA 10</strong> cria jogadas (mas abre espaços), <strong className="text-sky-400">XERIFE</strong> e <strong className="text-emerald-400">PAREDÃO</strong> blindam a defesa, <strong className="text-amber-500">MOTOR</strong> equilibra o meio.
+                </p>
+              </div>
+            </div>
+
+            {/* Passo 4 */}
+            <div className="relative border border-ink/15 dark:border-gold/15 bg-parchment dark:bg-navy p-4 flex gap-4 items-start">
+              <div className="absolute inset-[3px] border border-ink/[0.04] dark:border-gold/[0.06] pointer-events-none" />
+              <div className="shrink-0 w-8 h-8 border-2 border-gold/70 flex items-center justify-center">
+                <span className="text-sm font-black text-gold leading-none">4</span>
+              </div>
+              <div>
+                <p className="font-black text-sm uppercase tracking-wide text-ink dark:text-cream mb-0.5">
+                  38 rodadas, ranking final
+                </p>
+                <p className="text-[12px] text-ink/65 dark:text-cream/40 leading-relaxed">
+                  Seu XI enfrenta os maiores times históricos do Brasileirão. O ranking vai de <strong className="text-gold">S — Campeão Histórico</strong> a <strong className="text-coral">D — Rebaixado</strong>. Faça 78+ pontos para entrar para a lenda.
+                </p>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
         {/* Step 1: Mode */}
         <div className="w-full max-w-[600px] flex flex-col gap-5">
           <VintageDivider label="1 · Escolha o modo" />
