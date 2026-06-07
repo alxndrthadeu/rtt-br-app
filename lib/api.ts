@@ -24,7 +24,10 @@ export interface PlaySeasonResult {
     game_id: string; rodada: number;
     opp_team: string; opp_era: string; opp_ovr: number; is_home: boolean;
     my_goals: number; opp_goals: number; result: string;
+    my_scorers?: import('@/types').Scorer[];
+    opp_scorers?: import('@/types').Scorer[];
   }>;
+  leagueTable?: import('@/types').LeagueEntry[];
   pts: number; v: number; e: number; d: number; gf: number; gc: number;
 }
 

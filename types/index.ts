@@ -100,6 +100,23 @@ export interface GameState {
   defOvr: number;
   schedule: ScheduledMatch[];
   matches: LocalMatch[];
+  leagueTable?: LeagueEntry[];
+}
+
+export interface Scorer {
+  name: string;
+  minute: number;
+}
+
+export interface LeagueEntry {
+  team: string;
+  era: string;
+  pts: number;
+  v: number;
+  e: number;
+  d: number;
+  gf: number;
+  gc: number;
 }
 
 export interface LocalMatch {
@@ -111,6 +128,8 @@ export interface LocalMatch {
   my_goals: number;
   opp_goals: number;
   result: 'V' | 'E' | 'D';
+  my_scorers?: Scorer[];
+  opp_scorers?: Scorer[];
 }
 
 export interface CreateDraftPayload {

@@ -44,9 +44,9 @@ export function buildEmptySlots(formation: string): DraftSlot[] {
 const ATTACK_ROLES = new Set(['CA', 'PE', 'PD', 'MEI']);
 const DEFENSE_ROLES = new Set(['GK', 'ZAG', 'LD', 'LE', 'MEI']);
 
-// Bônus de overall somado antes de calcular a média — torna o time mais forte
-const TRAIT_ATK: Record<string, number> = { matador: 3, camisa10: 3, liso: 2 };
-const TRAIT_DEF: Record<string, number> = { xerife: 3, paredao: 4, liso: 1, camisa10: -2, motor: 3 };
+// Bônus por jogador (somado ao overall antes de calcular a média)
+const TRAIT_ATK: Record<string, number> = { matador: 3, camisa10: 3, driblador: 2, tecnico: 2 };
+const TRAIT_DEF: Record<string, number> = { xerife: 3, paredao: 4, driblador: 1, camisa10: -2, motor: 3, tecnico: 2 };
 
 export function calculateTeamOverall(slots: DraftSlot[]): number {
   const valid = slots.filter((s): s is DraftSlot & { player: Player } => s.player !== null);
@@ -71,9 +71,21 @@ export function calculateTeamStats(slots: DraftSlot[]): {
     return Math.round(total / group.length);
   };
 
+  let attackOvr = groupOvr(atkGroup, TRAIT_ATK);
+  let defOvr    = groupOvr(defGroup, TRAIT_DEF);
+
+  // capitao: bônus fixo de +3 DEF para o time (não acumula com múltiplos capitães)
+  const hasCapitao = filled.some(s => s.player.trait === 'capitao');
+  if (hasCapitao) defOvr += 3;
+
+  // estrela: 1 estrela = +4 ATK; 2+ estrelas = −3×count (ego clash)
+  const estrelaCount = filled.filter(s => s.player.trait === 'estrela').length;
+  if (estrelaCount === 1) attackOvr += 4;
+  else if (estrelaCount >= 2) attackOvr -= 3 * estrelaCount;
+
   return {
     overall:   Math.round(filled.reduce((s, x) => s + x.player.overall, 0) / filled.length),
-    attackOvr: groupOvr(atkGroup, TRAIT_ATK),
-    defOvr:    groupOvr(defGroup, TRAIT_DEF),
+    attackOvr,
+    defOvr,
   };
 }

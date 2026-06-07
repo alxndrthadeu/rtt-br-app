@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { getPoints } from '@/lib/game-engine';
@@ -96,15 +96,24 @@ function HeroMatchCard({ match }: { match: LocalMatch }) {
       </div>
 
       {/* Placar */}
-      <div className="flex items-center gap-3 px-4 pb-4 pt-1">
+      <div className="flex items-start gap-3 px-4 pb-4 pt-1">
         {/* Seu time */}
         <div className="flex-1 flex flex-col items-center gap-2">
           <Image src="/logo.png" alt="Seu Time" width={44} height={44} className="object-contain" />
           <span className="text-[10px] font-black uppercase tracking-widest text-cream/50">Seu Time</span>
+          {(match.my_scorers?.length ?? 0) > 0 && (
+            <div className="flex flex-col items-center gap-0.5">
+              {match.my_scorers!.map((sc, i) => (
+                <span key={i} className="text-[9px] text-cream/35 leading-tight">
+                  {sc.name.split(' ').at(-1)} {sc.minute}&apos;
+                </span>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Score */}
-        <div className="flex items-center gap-3 px-2">
+        <div className="flex items-center gap-3 px-2 pt-3">
           <span className={`text-5xl font-black tabular-nums leading-none ${match.my_goals > match.opp_goals ? 'text-cream' : 'text-cream/60'}`}>
             {match.my_goals}
           </span>
@@ -120,6 +129,15 @@ function HeroMatchCard({ match }: { match: LocalMatch }) {
           <span className="text-[10px] font-black uppercase tracking-widest text-cream/50">
             {getAbrev(match.opp_team)}
           </span>
+          {(match.opp_scorers?.length ?? 0) > 0 && (
+            <div className="flex flex-col items-center gap-0.5">
+              {match.opp_scorers!.map((sc, i) => (
+                <span key={i} className="text-[9px] text-cream/35 leading-tight">
+                  {sc.name.split(' ').at(-1)} {sc.minute}&apos;
+                </span>
+              ))}
+            </div>
+          )}
         </div>
       </div>
 
@@ -133,43 +151,56 @@ function HeroMatchCard({ match }: { match: LocalMatch }) {
 
 function FixtureRow({ match }: { match: LocalMatch }) {
   const s = resultStyle(match.result);
+  const myNames  = match.my_scorers?.map(sc => `${sc.name.split(' ').at(-1)} ${sc.minute}'`).join(', ') ?? '';
+  const oppNames = match.opp_scorers?.map(sc => `${sc.name.split(' ').at(-1)} ${sc.minute}'`).join(', ') ?? '';
+  const hasScorers = myNames || oppNames;
   return (
-    <div className="flex items-center gap-3 px-4 py-2.5 border-b border-cream/[0.05] last:border-b-0">
-      {/* Strip lateral */}
-      <div className={`w-1 h-8 rounded-full shrink-0 ${s.strip}`} />
+    <div className="border-b border-cream/[0.05] last:border-b-0">
+      <div className="flex items-center gap-3 px-4 py-2.5">
+        {/* Strip lateral */}
+        <div className={`w-1 h-8 rounded-full shrink-0 ${s.strip}`} />
 
-      {/* Rodada */}
-      <span className="text-[10px] text-cream/25 w-5 shrink-0 font-bold">{match.rodada}</span>
+        {/* Rodada */}
+        <span className="text-[10px] text-cream/25 w-5 shrink-0 font-bold">{match.rodada}</span>
 
-      {/* Times */}
-      <div className="flex-1 flex items-center gap-2 min-w-0">
-        <Image src="/logo.png" alt="" width={18} height={18} className="object-contain opacity-60 shrink-0" />
-        <span className="text-[11px] font-bold text-cream/55 uppercase tracking-wide truncate">
-          Seu Time
-        </span>
+        {/* Times */}
+        <div className="flex-1 flex items-center gap-2 min-w-0">
+          <Image src="/logo.png" alt="" width={18} height={18} className="object-contain opacity-60 shrink-0" />
+          <span className="text-[11px] font-bold text-cream/55 uppercase tracking-wide truncate">
+            Seu Time
+          </span>
+        </div>
+
+        {/* Score */}
+        <div className="flex items-center gap-1.5 shrink-0">
+          <span className={`text-sm font-black tabular-nums ${match.my_goals > match.opp_goals ? 'text-cream' : 'text-cream/50'}`}>
+            {match.my_goals}
+          </span>
+          <span className="text-cream/20 text-xs">–</span>
+          <span className={`text-sm font-black tabular-nums ${match.opp_goals > match.my_goals ? 'text-cream' : 'text-cream/50'}`}>
+            {match.opp_goals}
+          </span>
+        </div>
+
+        {/* Oponente */}
+        <div className="flex-1 flex items-center justify-end gap-2 min-w-0">
+          <span className="text-[11px] font-bold text-cream/55 uppercase tracking-wide truncate">
+            {getAbrev(match.opp_team)}
+          </span>
+          <TeamShield team={match.opp_team} size={18} className="shrink-0 opacity-90" />
+        </div>
+
+        {/* H/A */}
+        <span className="text-[8px] text-cream/20 shrink-0 w-3">{match.isHome ? 'H' : 'A'}</span>
       </div>
 
-      {/* Score */}
-      <div className="flex items-center gap-1.5 shrink-0">
-        <span className={`text-sm font-black tabular-nums ${match.my_goals > match.opp_goals ? 'text-cream' : 'text-cream/50'}`}>
-          {match.my_goals}
-        </span>
-        <span className="text-cream/20 text-xs">–</span>
-        <span className={`text-sm font-black tabular-nums ${match.opp_goals > match.my_goals ? 'text-cream' : 'text-cream/50'}`}>
-          {match.opp_goals}
-        </span>
-      </div>
-
-      {/* Oponente */}
-      <div className="flex-1 flex items-center justify-end gap-2 min-w-0">
-        <span className="text-[11px] font-bold text-cream/55 uppercase tracking-wide truncate">
-          {getAbrev(match.opp_team)}
-        </span>
-        <TeamShield team={match.opp_team} size={18} className="shrink-0 opacity-90" />
-      </div>
-
-      {/* H/A */}
-      <span className="text-[8px] text-cream/20 shrink-0 w-3">{match.isHome ? 'H' : 'A'}</span>
+      {/* Artilheiros */}
+      {hasScorers && (
+        <div className="flex gap-3 px-4 pb-2 -mt-1 pl-10">
+          <span className="flex-1 text-[8px] text-cream/25 leading-snug truncate">{myNames}</span>
+          <span className="flex-1 text-[8px] text-cream/25 leading-snug text-right truncate">{oppNames}</span>
+        </div>
+      )}
     </div>
   );
 }
@@ -275,12 +306,188 @@ function PreGameCard({ next, myAtk, myDef, myOvr }: { next: ScheduledMatch; myAt
   );
 }
 
+// ─── Animação Football Manager ────────────────────────────────────────────────
+
+type GoalEvent = { name: string; minute: number; team: 'my' | 'opp' };
+
+function MatchAnimation({ match, onComplete }: { match: LocalMatch; onComplete: () => void }) {
+  const [clock, setClock]       = useState(0);
+  const [myGoals, setMyGoals]   = useState(0);
+  const [oppGoals, setOppGoals] = useState(0);
+  const [latestEv, setLatestEv] = useState<GoalEvent | null>(null);
+  const [log, setLog]           = useState<GoalEvent[]>([]);
+  const [done, setDone]         = useState(false);
+
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const doneRef     = useRef(false);
+
+  const myScorers  = match.my_scorers  ?? [];
+  const oppScorers = match.opp_scorers ?? [];
+
+  const finishMatch = useCallback(() => {
+    if (doneRef.current) return;
+    doneRef.current = true;
+    if (intervalRef.current) clearInterval(intervalRef.current);
+    setClock(90);
+    setMyGoals(match.my_goals);
+    setOppGoals(match.opp_goals);
+    const allEvents: GoalEvent[] = [
+      ...myScorers.map(s => ({ name: s.name, minute: s.minute, team: 'my' as const })),
+      ...oppScorers.map(s => ({ name: s.name, minute: s.minute, team: 'opp' as const })),
+    ].sort((a, b) => a.minute - b.minute);
+    setLog(allEvents);
+    setLatestEv(null);
+    setDone(true);
+    setTimeout(onComplete, 1200);
+  }, [match, myScorers, oppScorers, onComplete]);
+
+  useEffect(() => {
+    let min = 0;
+    intervalRef.current = setInterval(() => {
+      min++;
+      myScorers.filter(s => s.minute === min).forEach(sc => {
+        setMyGoals(g => g + 1);
+        const ev: GoalEvent = { name: sc.name, minute: min, team: 'my' };
+        setLog(l => [...l, ev]);
+        setLatestEv(ev);
+      });
+      oppScorers.filter(s => s.minute === min).forEach(sc => {
+        setOppGoals(g => g + 1);
+        const ev: GoalEvent = { name: sc.name, minute: min, team: 'opp' };
+        setLog(l => [...l, ev]);
+        setLatestEv(ev);
+      });
+      setClock(min);
+      if (min >= 90) finishMatch();
+    }, 40); // 40ms/min → 3.6 s para 90 minutos
+    return () => { if (intervalRef.current) clearInterval(intervalRef.current); };
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Limpa notificação de gol após 1.5 s
+  useEffect(() => {
+    if (!latestEv) return;
+    const t = setTimeout(() => setLatestEv(null), 1500);
+    return () => clearTimeout(t);
+  }, [latestEv]);
+
+  const pct = Math.min((clock / 90) * 100, 100);
+
+  return (
+    <div className="fixed inset-0 bg-midnight z-50 flex flex-col select-none">
+
+      {/* Cabeçalho */}
+      <div className="px-4 py-3.5 border-b border-cream/[0.07] flex items-center justify-between shrink-0">
+        <span className="text-[9px] tracking-[0.4em] uppercase text-cream/30">
+          Rodada {match.rodada} · {match.isHome ? 'Em Casa' : 'Fora de Casa'}
+        </span>
+        {!done && (
+          <button
+            onClick={finishMatch}
+            className="text-[9px] tracking-[0.3em] uppercase text-cream/20 hover:text-cream/50 transition-colors font-bold"
+          >
+            Pular →
+          </button>
+        )}
+        {done && (
+          <span className="text-[9px] tracking-[0.3em] uppercase text-gold font-black">
+            Fim de Jogo
+          </span>
+        )}
+      </div>
+
+      {/* Placar ao vivo */}
+      <div className="flex-1 flex flex-col items-center justify-center px-8 gap-6">
+
+        <div className="flex items-center w-full">
+          {/* Meu time */}
+          <div className="flex-1 flex flex-col items-center gap-2">
+            <Image src="/logo.png" alt="Seu Time" width={52} height={52} className="object-contain" />
+            <span className="text-[9px] font-black uppercase tracking-widest text-cream/40">Seu Time</span>
+          </div>
+
+          {/* Score + relógio */}
+          <div className="flex flex-col items-center gap-2">
+            <div className="flex items-center gap-3">
+              <span className={`text-[3.5rem] font-black tabular-nums leading-none transition-colors ${myGoals > oppGoals ? 'text-cream' : 'text-cream/50'}`}>
+                {myGoals}
+              </span>
+              <span className="text-cream/15 text-2xl font-black">–</span>
+              <span className={`text-[3.5rem] font-black tabular-nums leading-none transition-colors ${oppGoals > myGoals ? 'text-cream' : 'text-cream/50'}`}>
+                {oppGoals}
+              </span>
+            </div>
+            <span className={`text-xs font-mono tabular-nums font-bold tracking-widest transition-all ${done ? 'text-gold' : 'text-cream/25'}`}>
+              {done ? '90+' : `${clock}′`}
+            </span>
+          </div>
+
+          {/* Adversário */}
+          <div className="flex-1 flex flex-col items-center gap-2">
+            <TeamShield team={match.opp_team} size={52} className="drop-shadow" />
+            <span className="text-[9px] font-black uppercase tracking-widest text-cream/40">
+              {getAbrev(match.opp_team)}
+            </span>
+          </div>
+        </div>
+
+        {/* Barra de progresso */}
+        <div className="w-full h-[2px] bg-cream/[0.06] rounded-full overflow-hidden">
+          <div
+            className="h-full bg-gold/40 rounded-full"
+            style={{ width: `${pct}%`, transition: 'width 38ms linear' }}
+          />
+        </div>
+
+        {/* Notificação de gol */}
+        <div className="h-16 flex items-center justify-center w-full">
+          <div className={`transition-all duration-200 ${latestEv ? 'opacity-100 scale-100' : 'opacity-0 scale-90 pointer-events-none'}`}>
+            {latestEv && (
+              <div className={`flex items-center gap-3 px-5 py-3 rounded-xl border ${
+                latestEv.team === 'my'
+                  ? 'bg-green/10 border-green/20 text-green'
+                  : 'bg-coral/10 border-coral/20 text-coral'
+              }`}>
+                <span className="text-2xl leading-none">⚽</span>
+                <div>
+                  <p className="font-black text-sm uppercase tracking-wide leading-none">
+                    {latestEv.name.split(' ').at(-1)}
+                  </p>
+                  <p className="text-[9px] opacity-50 mt-0.5">{latestEv.minute}&apos;</p>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+
+      </div>
+
+      {/* Log de eventos */}
+      <div className="shrink-0 px-6 pb-8 h-24 flex flex-col-reverse gap-1.5 overflow-hidden">
+        {[...log].reverse().slice(0, 4).map((e, i) => (
+          <div
+            key={`${e.minute}-${e.name}-${i}`}
+            className={`flex items-center gap-2 text-[10px] ${i === 0 ? 'opacity-70' : i === 1 ? 'opacity-30' : 'opacity-10'}`}
+          >
+            <span className={e.team === 'my' ? 'text-green' : 'text-coral'}>⚽</span>
+            <span className={`font-bold ${e.team === 'my' ? 'text-green/80' : 'text-coral/80'}`}>
+              {e.name.split(' ').at(-1)}
+            </span>
+            <span className="text-cream/20">{e.minute}&apos;</span>
+          </div>
+        ))}
+      </div>
+
+    </div>
+  );
+}
+
 // ─── Page principal ───────────────────────────────────────────────────────────
 
 export default function CampeonatoPage() {
   const router = useRouter();
-  const [state, setState] = useState<GameState | null>(null);
+  const [state, setState]                 = useState<GameState | null>(null);
   const [displayedRound, setDisplayedRound] = useState(0);
+  const [animMatch, setAnimMatch]         = useState<LocalMatch | null>(null);
 
   useEffect(() => {
     const raw = localStorage.getItem(GAME_STATE_KEY);
@@ -289,6 +496,21 @@ export default function CampeonatoPage() {
   }, [router]);
 
   if (!state) return null;
+
+  function handlePlayRound() {
+    if (!state) return;
+    const next = state.matches[displayedRound];
+    if (next) {
+      setAnimMatch(next);
+    } else {
+      setDisplayedRound(r => r + 1);
+    }
+  }
+
+  function handleAnimComplete() {
+    setAnimMatch(null);
+    setDisplayedRound(r => r + 1);
+  }
 
   const totalRounds = state.schedule.length;
   const finished = displayedRound >= totalRounds;
@@ -311,6 +533,9 @@ export default function CampeonatoPage() {
 
   return (
     <div className="min-h-screen bg-midnight flex flex-col">
+
+      {/* Overlay de animação de partida */}
+      {animMatch && <MatchAnimation match={animMatch} onComplete={handleAnimComplete} />}
 
       {/* Header */}
       <header className="px-4 py-3.5 flex items-center justify-between border-b border-cream/[0.07] shrink-0">
@@ -392,7 +617,7 @@ export default function CampeonatoPage() {
         ) : (
           <>
             <button
-              onClick={() => setDisplayedRound(r => r + 1)}
+              onClick={handlePlayRound}
               className="w-full py-4 bg-gold text-midnight font-black text-sm tracking-[0.25em] uppercase rounded-lg hover:bg-gold/90 transition-colors"
             >
               {isPreGame ? 'Jogar Rodada 1 ◆' : `Próxima Rodada ${displayedRound + 1} ◆`}
