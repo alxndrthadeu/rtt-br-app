@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { saveRanking, getDraft } from '@/lib/api';
@@ -11,13 +11,13 @@ import type { GameState, Draft } from '@/types';
 const GAME_STATE_KEY = 'rtt_game_state';
 
 const RANK_STYLES: Record<string, {
-  letter: string; border: string; bg: string; tag: string; hex: string; grad: [string, string];
+  letter: string; border: string; bg: string; tag: string; hex: string;
 }> = {
-  S: { letter: 'text-gold',       border: 'border-gold',          bg: 'bg-gold/[0.07]',         tag: 'bg-gold/20 text-gold',              hex: '#C9A84C', grad: ['#C9A84C', '#7A5C0A'] },
-  A: { letter: 'text-sky-400',    border: 'border-sky-400/60',    bg: 'bg-sky-400/[0.07]',      tag: 'bg-sky-400/20 text-sky-400',        hex: '#38BDF8', grad: ['#38BDF8', '#0369A1'] },
-  B: { letter: 'text-violet-400', border: 'border-violet-400/50', bg: 'bg-violet-400/[0.06]',   tag: 'bg-violet-400/20 text-violet-400',  hex: '#A78BFA', grad: ['#A78BFA', '#5B21B6'] },
-  C: { letter: 'text-amber-400',  border: 'border-amber-400/50',  bg: 'bg-amber-400/[0.06]',    tag: 'bg-amber-400/20 text-amber-400',    hex: '#FBB134', grad: ['#FBB134', '#92400E'] },
-  D: { letter: 'text-coral',      border: 'border-coral/50',      bg: 'bg-coral/[0.06]',        tag: 'bg-coral/20 text-coral',            hex: '#FF6B6B', grad: ['#FF6B6B', '#991B1B'] },
+  S: { letter: 'text-gold',       border: 'border-gold',          bg: 'bg-gold/[0.07]',       tag: 'bg-gold/20 text-gold',             hex: '#C9A84C' },
+  A: { letter: 'text-sky-400',    border: 'border-sky-400/60',    bg: 'bg-sky-400/[0.07]',    tag: 'bg-sky-400/20 text-sky-400',       hex: '#38BDF8' },
+  B: { letter: 'text-violet-400', border: 'border-violet-400/50', bg: 'bg-violet-400/[0.06]', tag: 'bg-violet-400/20 text-violet-400', hex: '#A78BFA' },
+  C: { letter: 'text-amber-400',  border: 'border-amber-400/50',  bg: 'bg-amber-400/[0.06]',  tag: 'bg-amber-400/20 text-amber-400',   hex: '#FBB134' },
+  D: { letter: 'text-coral',      border: 'border-coral/50',      bg: 'bg-coral/[0.06]',      tag: 'bg-coral/20 text-coral',           hex: '#FF6B6B' },
 };
 
 interface AwardInfo {
@@ -60,37 +60,7 @@ function AwardCard({ icon, label, name, sub, shield }: {
   );
 }
 
-// ─── Share card (Canvas) ──────────────────────────────────────────────────────
-
-function wrapText(ctx: CanvasRenderingContext2D, text: string, maxW: number): string[] {
-  const words = text.split(' ');
-  const lines: string[] = [];
-  let line = '';
-  for (const w of words) {
-    const test = line ? `${line} ${w}` : w;
-    if (ctx.measureText(test).width > maxW && line) {
-      lines.push(line);
-      line = w;
-    } else {
-      line = test;
-    }
-  }
-  if (line) lines.push(line);
-  return lines;
-}
-
-function sectionDivider(ctx: CanvasRenderingContext2D, label: string, y: number, hex: string, W: number) {
-  ctx.font = '700 22px Arial, Helvetica, sans-serif';
-  ctx.fillStyle = hex + 'BB';
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'alphabetic';
-  ctx.fillText(label, W / 2, y);
-  const hw = ctx.measureText(label).width / 2 + 18;
-  ctx.strokeStyle = hex + '44';
-  ctx.lineWidth = 1;
-  ctx.beginPath(); ctx.moveTo(90, y - 7); ctx.lineTo(W / 2 - hw, y - 7); ctx.stroke();
-  ctx.beginPath(); ctx.moveTo(W / 2 + hw, y - 7); ctx.lineTo(W - 90, y - 7); ctx.stroke();
-}
+// ─── Share card — estética vintage / Nike ────────────────────────────────────
 
 async function buildShareCanvas(
   state: GameState,
@@ -100,197 +70,219 @@ async function buildShareCanvas(
 ): Promise<HTMLCanvasElement> {
   const W = 1080, H = 1920;
   const canvas = document.createElement('canvas');
-  canvas.width = W;
+  canvas.width  = W;
   canvas.height = H;
   const ctx = canvas.getContext('2d')!;
+  const hex = (RANK_STYLES[rank] ?? RANK_STYLES['B']).hex;
+  const BG  = '#050B17';
 
-  const rs = RANK_STYLES[rank] ?? RANK_STYLES['B'];
-  const hex = rs.hex;
-  const [gradTop, gradBot] = rs.grad;
-
-  // ── Background ──────────────────────────────────────────────────────────────
-  const bgGrad = ctx.createLinearGradient(0, 0, W * 0.6, H);
-  bgGrad.addColorStop(0, '#080D18');
-  bgGrad.addColorStop(1, '#0C1426');
-  ctx.fillStyle = bgGrad;
+  // ── Background ───────────────────────────────────────────────────────────────
+  ctx.fillStyle = BG;
   ctx.fillRect(0, 0, W, H);
 
-  const glow = ctx.createRadialGradient(W / 2, 520, 0, W / 2, 520, 520);
-  glow.addColorStop(0, hex + '28');
-  glow.addColorStop(1, 'transparent');
-  ctx.fillStyle = glow;
-  ctx.fillRect(0, 0, W, H);
+  // Grain
+  for (let i = 0; i < 18000; i++) {
+    ctx.fillStyle = `rgba(255,255,255,${Math.random() * 0.02})`;
+    ctx.fillRect(Math.random() * W, Math.random() * H, 1.4, 1.4);
+  }
 
-  // ── Border ──────────────────────────────────────────────────────────────────
-  ctx.strokeStyle = hex + 'AA';
-  ctx.lineWidth = 5;
-  ctx.strokeRect(48, 48, W - 96, H - 96);
-  ctx.strokeStyle = hex + '22';
-  ctx.lineWidth = 2;
-  ctx.strokeRect(66, 66, W - 132, H - 132);
+  // ── Double border ─────────────────────────────────────────────────────────────
+  ctx.strokeStyle = hex;
+  ctx.lineWidth   = 4;
+  ctx.strokeRect(32, 32, W - 64, H - 64);
+  ctx.strokeStyle = hex + '1C';
+  ctx.lineWidth   = 1;
+  ctx.strokeRect(46, 46, W - 92, H - 92);
 
-  // ── Branding ─────────────────────────────────────────────────────────────────
-  ctx.font = '700 30px Arial, Helvetica, sans-serif';
-  ctx.fillStyle = hex + 'BB';
+  // ── Header ────────────────────────────────────────────────────────────────────
+  ctx.font        = '900 66px Arial Black, Arial, sans-serif';
+  ctx.fillStyle   = '#FFFFFF';
+  ctx.textAlign   = 'center';
+  ctx.textBaseline = 'alphabetic';
+  ctx.fillText('ALCANCE O TOPO', W / 2, 116);
+
+  ctx.fillStyle = hex;
+  ctx.fillRect(32, 132, W - 64, 4);
+
+  ctx.font      = '600 18px Arial, Helvetica, sans-serif';
+  ctx.fillStyle = hex + '88';
+  ctx.fillText('FUTEBOL HISTÓRICO BRASILEIRO', W / 2, 168);
+
+  // ── Rank — dupla camada (efeito offset de impressão gráfica) ─────────────────
+  // Camada fantasma levemente deslocada
+  ctx.font      = '900 500px Arial Black, Arial, sans-serif';
+  ctx.fillStyle = hex + '09';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'alphabetic';
-  ctx.fillText('ALCANCE O TOPO', W / 2, 168);
+  ctx.fillText(rank, W / 2 + 7, 676);
 
-  ctx.font = '400 24px Arial, Helvetica, sans-serif';
-  ctx.fillStyle = 'rgba(245,240,232,0.25)';
-  ctx.fillText('MINHA CAMPANHA', W / 2, 212);
+  // Camada sólida
+  ctx.fillStyle = hex;
+  ctx.fillText(rank, W / 2, 670);
 
-  ctx.strokeStyle = hex + '44';
-  ctx.lineWidth = 1;
-  ctx.beginPath(); ctx.moveTo(130, 246); ctx.lineTo(W - 130, 246); ctx.stroke();
-
-  // ── Rank letter (420px — compact to make room for team) ──────────────────────
-  const rankGrad = ctx.createLinearGradient(W / 2 - 240, 260, W / 2 + 240, 630);
-  rankGrad.addColorStop(0, gradTop);
-  rankGrad.addColorStop(1, gradBot);
-  ctx.font = '900 420px Arial Black, Arial, sans-serif';
-  ctx.fillStyle = rankGrad;
+  // Faixa label do rank
+  ctx.fillStyle = hex + '16';
+  ctx.fillRect(32, 682, W - 64, 54);
+  ctx.font      = '700 34px Arial, Helvetica, sans-serif';
+  ctx.fillStyle = '#FFFFFF';
   ctx.textAlign = 'center';
-  ctx.textBaseline = 'alphabetic';
-  ctx.fillText(rank, W / 2, 630);
+  ctx.textBaseline = 'middle';
+  ctx.fillText((RANK_LABELS[rank] ?? '').toUpperCase(), W / 2, 709);
 
-  // ── Rank label + subtitle ────────────────────────────────────────────────────
-  ctx.font = '700 44px Arial, Helvetica, sans-serif';
-  ctx.fillStyle = 'rgba(245,240,232,0.88)';
-  ctx.textAlign = 'center';
-  ctx.fillText((RANK_LABELS[rank] ?? '').toUpperCase(), W / 2, 696);
+  // ── Speed slash (duas listras diagonais) ──────────────────────────────────────
+  const slashY = 746;
+  ctx.save();
+  ctx.fillStyle = hex;
+  ctx.translate(W / 2, slashY);
+  ctx.rotate(-0.02);
+  ctx.fillRect(-W / 2 - 20, -5, W + 40, 10);
+  ctx.restore();
 
-  ctx.font = '400 26px Arial, Helvetica, sans-serif';
-  ctx.fillStyle = 'rgba(245,240,232,0.35)';
-  const sub = RANK_SUBTITLES[rank] ?? '';
-  const subLines = wrapText(ctx, sub, W - 240);
-  subLines.forEach((line, i) => ctx.fillText(line, W / 2, 746 + i * 40));
+  ctx.save();
+  ctx.fillStyle = hex + '36';
+  ctx.translate(W / 2, slashY + 18);
+  ctx.rotate(-0.02);
+  ctx.fillRect(-W / 2 - 20, -3, W + 40, 5);
+  ctx.restore();
 
-  // ── Stats bar ────────────────────────────────────────────────────────────────
-  const statsY = 746 + subLines.length * 40 + 30;
-  const statsH = 150;
-  ctx.fillStyle = 'rgba(255,255,255,0.03)';
-  ctx.fillRect(90, statsY, W - 180, statsH);
-  ctx.strokeStyle = 'rgba(245,240,232,0.07)';
-  ctx.lineWidth = 1;
-  ctx.strokeRect(90, statsY, W - 180, statsH);
+  // ── Stats bar (bloco dourado sólido) ─────────────────────────────────────────
+  const statsY = 772, statsH = 144;
+  ctx.fillStyle = hex;
+  ctx.fillRect(32, statsY, W - 64, statsH);
 
-  const statItems: { label: string; value: number }[] = [
+  const statItems = [
     { label: 'PTS', value: state.pts },
     { label: 'V',   value: state.v   },
     { label: 'E',   value: state.e   },
     { label: 'D',   value: state.d   },
     { label: 'GF',  value: state.gf  },
   ];
-  const sw = (W - 180) / statItems.length;
+  const sw = (W - 64) / statItems.length;
   statItems.forEach((s, i) => {
-    const sx = 90 + i * sw + sw / 2;
-    ctx.font = '900 64px Arial Black, Arial, sans-serif';
-    ctx.fillStyle = i === 0 ? hex : 'rgba(245,240,232,0.85)';
+    const sx = 32 + i * sw + sw / 2;
+    ctx.font = '900 62px Arial Black, Arial, sans-serif';
+    ctx.fillStyle = BG;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'alphabetic';
     ctx.fillText(String(s.value), sx, statsY + 96);
-    ctx.font = '600 22px Arial, Helvetica, sans-serif';
-    ctx.fillStyle = 'rgba(245,240,232,0.3)';
-    ctx.fillText(s.label, sx, statsY + 132);
+    ctx.font = '700 20px Arial, Helvetica, sans-serif';
+    ctx.fillStyle = BG + 'AA';
+    ctx.fillText(s.label, sx, statsY + 130);
+    if (i < statItems.length - 1) {
+      ctx.fillStyle = BG + '28';
+      ctx.fillRect(32 + (i + 1) * sw - 1, statsY + 18, 2, statsH - 36);
+    }
   });
 
-  // ── Team section ──────────────────────────────────────────────────────────────
-  const teamLabelY = statsY + statsH + 50;
-  sectionDivider(ctx, 'MEU TIME', teamLabelY, hex, W);
+  // ── Escalação ─────────────────────────────────────────────────────────────────
+  const squadLabelY = 944;
+  ctx.font      = '700 16px Arial, Helvetica, sans-serif';
+  ctx.fillStyle = hex + '80';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'alphabetic';
+  ctx.fillText('E S C A L A Ç Ã O', W / 2, squadLabelY);
+  ctx.fillStyle = hex + '26';
+  ctx.fillRect(32, squadLabelY + 8, W - 64, 1);
 
   const sorted = [...drafts].filter(d => d.player).sort((a, b) => a.slot_index - b.slot_index);
-  const rowH = 36;
+  const rowH   = 46;
+  const rowStart = squadLabelY + 18;
+
   sorted.forEach((d, i) => {
-    const ry = teamLabelY + 16 + i * rowH;
+    const ry = rowStart + i * rowH;
 
     if (i % 2 === 0) {
-      ctx.fillStyle = 'rgba(255,255,255,0.02)';
-      ctx.fillRect(90, ry, W - 180, rowH);
+      ctx.fillStyle = hex + '06';
+      ctx.fillRect(32, ry, W - 64, rowH);
     }
 
-    // Position badge
-    ctx.fillStyle = hex + '1A';
-    ctx.fillRect(90, ry + 2, 58, rowH - 4);
-    ctx.font = '700 17px Arial, Helvetica, sans-serif';
-    ctx.fillStyle = hex + 'CC';
-    ctx.textAlign = 'center';
+    // Badge posição
+    ctx.fillStyle = hex + '20';
+    ctx.fillRect(48, ry + 5, 64, 36);
+    ctx.font        = '700 17px Arial, Helvetica, sans-serif';
+    ctx.fillStyle   = hex;
+    ctx.textAlign   = 'center';
     ctx.textBaseline = 'middle';
-    ctx.fillText(d.slot_pos, 119, ry + rowH / 2);
+    ctx.fillText(d.slot_pos, 80, ry + rowH / 2);
 
-    // Player name (last word / mononym)
-    ctx.font = '500 22px Arial, Helvetica, sans-serif';
-    ctx.fillStyle = 'rgba(245,240,232,0.82)';
-    ctx.textAlign = 'left';
-    ctx.fillText(d.player!.name.split(' ').at(-1)!, 162, ry + rowH / 2);
+    // Nome completo (caps)
+    ctx.font        = '700 24px Arial Black, Arial, sans-serif';
+    ctx.fillStyle   = 'rgba(245,240,232,0.88)';
+    ctx.textAlign   = 'left';
+    ctx.fillText(d.player!.name.toUpperCase(), 126, ry + rowH / 2);
 
     // Overall
-    ctx.font = '700 19px Arial, Helvetica, sans-serif';
-    ctx.fillStyle = 'rgba(245,240,232,0.32)';
-    ctx.textAlign = 'right';
-    ctx.fillText(String(d.player!.overall), W - 90, ry + rowH / 2);
+    ctx.font        = '600 20px Arial, Helvetica, sans-serif';
+    ctx.fillStyle   = hex + '90';
+    ctx.textAlign   = 'right';
+    ctx.fillText(String(d.player!.overall), W - 48, ry + rowH / 2);
+
+    // Separador
+    ctx.fillStyle = hex + '0E';
+    ctx.fillRect(32, ry + rowH - 1, W - 64, 1);
   });
 
-  // ── Awards section ────────────────────────────────────────────────────────────
-  const teamEndY   = teamLabelY + 16 + sorted.length * rowH;
-  const awardsLabelY = teamEndY + 48;
-  sectionDivider(ctx, 'PRÊMIOS', awardsLabelY, hex, W);
+  // ── Prêmios ───────────────────────────────────────────────────────────────────
+  const awardStartY = rowStart + sorted.length * rowH + 50;
+  ctx.font      = '700 16px Arial, Helvetica, sans-serif';
+  ctx.fillStyle = hex + '80';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'alphabetic';
+  ctx.fillText('P R Ê M I O S', W / 2, awardStartY);
+  ctx.fillStyle = hex + '26';
+  ctx.fillRect(32, awardStartY + 8, W - 64, 1);
 
   const awardList = [
     {
       icon: '⚽',
       label: 'ARTILHEIRO',
       value: awards.artilheiro
-        ? `${awards.artilheiro.name.split(' ').at(-1)} · ${awards.artilheiro.goals} GOLS`
+        ? `${awards.artilheiro.name.split(' ').at(-1)!.toUpperCase()} · ${awards.artilheiro.goals} GOLS`
         : '—',
     },
     {
       icon: '⭐',
       label: 'CRAQUE',
       value: awards.craque
-        ? `${awards.craque.name.split(' ').at(-1)} · ${awards.craque.ovr} OVR`
+        ? `${awards.craque.name.split(' ').at(-1)!.toUpperCase()} · ${awards.craque.ovr} OVR`
         : '—',
     },
     {
       icon: '🧤',
       label: 'GOLEIRO',
       value: awards.goleiro
-        ? `${awards.goleiro.name.split(' ').at(-1)} · ${awards.goleiro.cleanSheets} limpos`
+        ? `${awards.goleiro.name.split(' ').at(-1)!.toUpperCase()} · ${awards.goleiro.cleanSheets} LIMPOS`
         : '—',
     },
   ];
 
-  const awardH = 90;
-  const awardGap = 8;
+  const awardRowH = 72;
   awardList.forEach((a, i) => {
-    const ay = awardsLabelY + 18 + i * (awardH + awardGap);
-    ctx.fillStyle = 'rgba(255,255,255,0.04)';
-    ctx.fillRect(90, ay, W - 180, awardH);
-    ctx.strokeStyle = hex + '2A';
-    ctx.lineWidth = 1;
-    ctx.strokeRect(90, ay, W - 180, awardH);
-
-    ctx.font = '30px sans-serif';
+    const ay = awardStartY + 20 + i * awardRowH;
+    ctx.font = '26px sans-serif';
     ctx.textAlign = 'left';
     ctx.textBaseline = 'middle';
-    ctx.fillText(a.icon, 122, ay + awardH / 2);
+    ctx.fillText(a.icon, 52, ay + awardRowH / 2);
 
-    ctx.font = '600 18px Arial, Helvetica, sans-serif';
-    ctx.fillStyle = hex + 'BB';
+    ctx.font      = '600 16px Arial, Helvetica, sans-serif';
+    ctx.fillStyle = hex + 'AA';
     ctx.textBaseline = 'alphabetic';
-    ctx.fillText(a.label, 178, ay + 32);
+    ctx.fillText(a.label, 96, ay + 26);
 
-    ctx.font = '700 28px Arial Black, Arial, sans-serif';
-    ctx.fillStyle = 'rgba(245,240,232,0.9)';
-    ctx.fillText(a.value, 178, ay + 72);
+    ctx.font      = '700 28px Arial Black, Arial, sans-serif';
+    ctx.fillStyle = 'rgba(245,240,232,0.90)';
+    ctx.fillText(a.value, 96, ay + 62);
+
+    ctx.fillStyle = hex + '10';
+    ctx.fillRect(32, ay + awardRowH - 1, W - 64, 1);
   });
 
-  // ── Footer ───────────────────────────────────────────────────────────────────
-  ctx.font = '400 26px Arial, Helvetica, sans-serif';
-  ctx.fillStyle = hex + '55';
+  // ── Footer ────────────────────────────────────────────────────────────────────
+  ctx.font      = '400 22px Arial, Helvetica, sans-serif';
+  ctx.fillStyle = hex + '50';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'alphabetic';
-  ctx.fillText('alcanceotopobrasil.com.br', W / 2, H - 82);
+  ctx.fillText('alcanceotopobrasil.com.br', W / 2, H - 54);
 
   return canvas;
 }
@@ -299,13 +291,15 @@ async function buildShareCanvas(
 
 export default function ResultadoPage() {
   const router = useRouter();
-  const [state, setState]     = useState<GameState | null>(null);
-  const [rank, setRank]       = useState('');
+  const [state, setState]         = useState<GameState | null>(null);
+  const [rank, setRank]           = useState('');
   const [destaque, setDestaque]   = useState<Draft | null>(null);
   const [allDrafts, setAllDrafts] = useState<Draft[]>([]);
   const [awards, setAwards]       = useState<AwardInfo>({ artilheiro: null, goleiro: null, craque: null });
-  const [saved, setSaved]     = useState(false);
-  const [sharing, setSharing] = useState(false);
+  const [saved, setSaved]         = useState(false);
+  const [generating, setGenerating] = useState(false);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const previewBlobRef = useRef<Blob | null>(null);
 
   useEffect(() => {
     const raw = localStorage.getItem(GAME_STATE_KEY);
@@ -314,7 +308,6 @@ export default function ResultadoPage() {
     setState(gs);
     setRank(calculateRanking(gs.pts));
 
-    // Artilheiro: conta gols dos my_scorers
     const goalMap = new Map<string, { goals: number; team: string }>();
     for (const m of gs.matches) {
       for (const s of m.my_scorers ?? []) {
@@ -327,23 +320,18 @@ export default function ResultadoPage() {
     getDraft(gs.gameId).then((drafts) => {
       setAllDrafts(drafts);
 
-      // Destaque (maior overall)
       const best = drafts.reduce<Draft | null>((prev, curr) =>
         (curr.player?.overall ?? 0) > (prev?.player?.overall ?? 0) ? curr : prev, null);
       setDestaque(best);
 
-      // Relaciona artilheiro ao time via draft
       for (const d of drafts) {
         if (d.player && goalMap.has(d.player.name)) {
           goalMap.set(d.player.name, { ...goalMap.get(d.player.name)!, team: d.player.team });
         }
       }
       const topScorer = Array.from(goalMap.entries()).sort((a, b) => b[1].goals - a[1].goals)[0];
+      const gkDraft   = drafts.find(d => d.slot_pos === 'GK');
 
-      // Goleiro
-      const gkDraft = drafts.find(d => d.slot_pos === 'GK');
-
-      // Craque: índice de desempenho por posição
       const atkRoles = new Set(['CA', 'PE', 'PD', 'MEI']);
       const bestPerf = drafts
         .filter(d => d.player)
@@ -358,15 +346,9 @@ export default function ResultadoPage() {
         .sort((a, b) => b.score - a.score)[0];
 
       setAwards({
-        artilheiro: topScorer
-          ? { name: topScorer[0], goals: topScorer[1].goals, team: topScorer[1].team }
-          : null,
-        goleiro: gkDraft?.player
-          ? { name: gkDraft.player.name, cleanSheets, team: gkDraft.player.team }
-          : null,
-        craque: bestPerf?.d.player
-          ? { name: bestPerf.d.player.name, ovr: bestPerf.d.player.overall, team: bestPerf.d.player.team, era: bestPerf.d.player.era }
-          : null,
+        artilheiro: topScorer ? { name: topScorer[0], goals: topScorer[1].goals, team: topScorer[1].team } : null,
+        goleiro:    gkDraft?.player ? { name: gkDraft.player.name, cleanSheets, team: gkDraft.player.team } : null,
+        craque:     bestPerf?.d.player ? { name: bestPerf.d.player.name, ovr: bestPerf.d.player.overall, team: bestPerf.d.player.team, era: bestPerf.d.player.era } : null,
       });
     });
   }, [router]);
@@ -378,48 +360,63 @@ export default function ResultadoPage() {
       game_id: state.gameId,
       rank,
       destaque_player_id: destaque.player_id,
-      destaque_overall: destaque.player?.overall ?? state.teamOverall,
-      pts: state.pts,
-      v: state.v,
-      e: state.e,
-      d: state.d,
-      gf: state.gf,
-      gc: state.gc,
+      destaque_overall:   destaque.player?.overall ?? state.teamOverall,
+      pts: state.pts, v: state.v, e: state.e, d: state.d, gf: state.gf, gc: state.gc,
     }).catch(() => null);
   }, [state, rank, saved, destaque]);
 
-  async function handleShare() {
-    if (!state || !rank || sharing) return;
-    setSharing(true);
+  // ── Share handlers ────────────────────────────────────────────────────────────
+
+  async function handleGeneratePreview() {
+    if (!state || !rank || generating) return;
+    setGenerating(true);
     try {
       const canvas = await buildShareCanvas(state, rank, awards, allDrafts);
-      canvas.toBlob(async (blob) => {
+      canvas.toBlob((blob) => {
         if (!blob) return;
-        const file = new File([blob], 'minha-campanha-rtt.png', { type: 'image/png' });
-        try {
-          if (navigator.canShare?.({ files: [file] })) {
-            await navigator.share({
-              files: [file],
-              title: `Alcance o Topo · Rank ${rank}`,
-              text: `Terminei minha campanha com ${state!.pts} pts e rank ${rank}! 🏆`,
-            });
-          } else {
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'minha-campanha-rtt.png';
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-          }
-        } catch {
-          // user cancelled share
-        }
+        if (previewUrl) URL.revokeObjectURL(previewUrl);
+        previewBlobRef.current = blob;
+        setPreviewUrl(URL.createObjectURL(blob));
       }, 'image/png');
     } finally {
-      setSharing(false);
+      setGenerating(false);
     }
+  }
+
+  async function handleShareFromPreview() {
+    const blob = previewBlobRef.current;
+    if (!blob || !state) return;
+    const file = new File([blob], 'minha-campanha-rtt.png', { type: 'image/png' });
+    try {
+      if (navigator.canShare?.({ files: [file] })) {
+        await navigator.share({
+          files: [file],
+          title: `Alcance o Topo · Rank ${rank}`,
+          text: `Terminei minha campanha com ${state.pts} pts e rank ${rank}! 🏆`,
+        });
+      } else {
+        handleDownload();
+      }
+    } catch { /* cancelled */ }
+  }
+
+  function handleDownload() {
+    const blob = previewBlobRef.current;
+    if (!blob) return;
+    const url = URL.createObjectURL(blob);
+    const a   = document.createElement('a');
+    a.href     = url;
+    a.download = 'minha-campanha-rtt.png';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
+  function handleClosePreview() {
+    if (previewUrl) URL.revokeObjectURL(previewUrl);
+    setPreviewUrl(null);
+    previewBlobRef.current = null;
   }
 
   function handlePlayAgain() {
@@ -429,13 +426,60 @@ export default function ResultadoPage() {
 
   if (!state) return null;
 
-  const style = RANK_STYLES[rank] ?? RANK_STYLES['B'];
+  const style    = RANK_STYLES[rank] ?? RANK_STYLES['B'];
   const hasAwards = awards.artilheiro || awards.craque || awards.goleiro;
 
   return (
     <div className="min-h-screen bg-midnight flex flex-col relative z-10">
 
-      {/* Header */}
+      {/* ── Preview modal ─────────────────────────────────────────────────────── */}
+      {previewUrl && (
+        <div className="fixed inset-0 z-50 bg-midnight flex flex-col">
+
+          {/* Header */}
+          <div className="px-6 py-4 flex items-center justify-between border-b border-gold/15 shrink-0">
+            <button
+              onClick={handleClosePreview}
+              className="text-[9px] tracking-[0.4em] uppercase font-bold text-cream/30 hover:text-cream/70 transition-colors"
+            >
+              ← Voltar
+            </button>
+            <span className="text-[9px] tracking-[0.4em] uppercase font-bold text-gold/60">
+              Prévia da Campanha
+            </span>
+            <div className="w-16" />
+          </div>
+
+          {/* Imagem */}
+          <div className="flex-1 overflow-hidden flex items-center justify-center bg-black/60 px-6 py-4">
+            <img
+              src={previewUrl}
+              alt="Prévia da campanha"
+              className="h-full w-auto object-contain"
+              style={{ filter: 'drop-shadow(0 24px 48px rgba(0,0,0,0.85))' }}
+            />
+          </div>
+
+          {/* Ações */}
+          <div className="px-6 py-6 flex flex-col gap-3 border-t border-gold/15 shrink-0 bg-midnight">
+            <button
+              onClick={handleShareFromPreview}
+              className="w-full py-4 bg-gold text-midnight font-black uppercase tracking-[0.25em] text-sm hover:bg-gold/90 transition-colors"
+            >
+              ↑ Compartilhar
+            </button>
+            <button
+              onClick={handleDownload}
+              className="w-full py-3.5 border border-cream/15 text-cream/50 font-black uppercase tracking-widest text-sm hover:border-gold/40 hover:text-cream/70 transition-colors"
+            >
+              ↓ Baixar Imagem
+            </button>
+          </div>
+
+        </div>
+      )}
+
+      {/* ── Header da página ──────────────────────────────────────────────────── */}
       <header className="px-6 py-4 flex items-center justify-between border-b border-gold/15">
         <button onClick={() => router.push('/')} className="flex items-center gap-3 group">
           <Image src="/logo.png" alt="Alcance o Topo" width={34} height={34} className="object-contain" />
@@ -449,7 +493,7 @@ export default function ResultadoPage() {
         </span>
       </header>
 
-      {/* Body */}
+      {/* ── Body ─────────────────────────────────────────────────────────────── */}
       <div className="flex-1 flex flex-col items-center py-12 px-6 gap-8 max-w-lg mx-auto w-full">
 
         {/* Eyebrow */}
@@ -500,7 +544,7 @@ export default function ResultadoPage() {
           </div>
         </div>
 
-        {/* Prêmios da Temporada */}
+        {/* Prêmios */}
         {hasAwards && (
           <div className="w-full flex flex-col gap-4">
             <VintageDivider label="Prêmios da Temporada" />
@@ -536,18 +580,18 @@ export default function ResultadoPage() {
           </div>
         )}
 
-        {/* Share */}
+        {/* Ações */}
         <div className="w-full flex flex-col gap-3 mt-2">
           <button
-            onClick={handleShare}
-            disabled={sharing}
+            onClick={handleGeneratePreview}
+            disabled={generating}
             className={`w-full py-3.5 border-2 font-black text-sm tracking-[0.25em] uppercase transition-all duration-200 flex items-center justify-center gap-2 ${
-              sharing
+              generating
                 ? 'border-cream/10 text-cream/25 cursor-not-allowed'
                 : `${style.border} ${style.letter} hover:bg-white/[0.03]`
             }`}
           >
-            {sharing ? 'Gerando...' : '↑ Compartilhar Campanha'}
+            {generating ? 'Gerando...' : '◆ Gerar Cartão'}
           </button>
 
           <div className="flex gap-3">
