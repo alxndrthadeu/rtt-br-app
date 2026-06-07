@@ -6,7 +6,7 @@ import { saveRanking, getDraft } from '@/lib/api';
 import { calculateRanking, RANK_LABELS, RANK_SUBTITLES } from '@/lib/game-engine';
 import TeamShield from '@/components/TeamShield';
 import { getAbrev } from '@/lib/escudos';
-import type { GameState, Draft, LeagueEntry } from '@/types';
+import type { GameState, Draft } from '@/types';
 
 const GAME_STATE_KEY = 'rtt_game_state';
 
@@ -56,116 +56,6 @@ function AwardCard({ icon, label, name, sub, shield }: {
         </div>
         {shield && <TeamShield team={shield} size={30} className="shrink-0 opacity-70" />}
       </div>
-    </div>
-  );
-}
-
-// ─── Tabela de Classificação (estilo Premier League) ─────────────────────────
-
-function zoneStrip(pos: number) {
-  if (pos === 1)  return 'bg-gold';
-  if (pos <= 5)   return 'bg-sky-400';
-  if (pos <= 8)   return 'bg-amber-400';
-  if (pos >= 17)  return 'bg-coral';
-  return 'bg-transparent';
-}
-
-function LeagueTable({ table }: { table: LeagueEntry[] }) {
-  const COLS = ['V', 'E', 'D', 'SG', 'PTS'] as const;
-
-  return (
-    <div className="w-full overflow-hidden border border-cream/[0.07]" style={{ borderRadius: 0 }}>
-
-      {/* Cabeçalho colunas */}
-      <div className="flex items-center px-3 py-2 border-b border-cream/[0.08] bg-navy/70">
-        <div className="w-[3px] shrink-0 mr-1.5" />
-        <div className="w-5 shrink-0 mr-2" />
-        <div className="w-[18px] shrink-0 mr-2" />
-        <div className="flex-1" />
-        {COLS.map(c => (
-          <span
-            key={c}
-            className={`text-center text-[8px] uppercase tracking-[0.3em] text-cream/25 font-bold shrink-0 tabular-nums ${
-              c === 'PTS' || c === 'SG' ? 'w-8' : 'w-6'
-            }`}
-          >
-            {c}
-          </span>
-        ))}
-      </div>
-
-      {/* Linhas */}
-      {table.map((entry, i) => {
-        const pos      = i + 1;
-        const isUser   = entry.team === 'Seu Time';
-        const gd       = entry.gf - entry.gc;
-        const teamName = isUser ? 'Seu Time' : getAbrev(entry.team);
-        const eraTag   = !isUser && entry.era ? `'${entry.era.replace(/\D/g, '').slice(-2)}` : '';
-
-        return (
-          <div
-            key={`${entry.team}|${entry.era}|${i}`}
-            className={`flex items-center px-3 py-[9px] border-b border-cream/[0.04] last:border-b-0 ${isUser ? 'bg-gold/[0.06]' : ''}`}
-          >
-            {/* Faixa de zona */}
-            <div className={`w-[3px] h-6 rounded-full shrink-0 mr-1.5 ${zoneStrip(pos)}`} />
-
-            {/* Posição */}
-            <span className={`w-5 text-center text-[11px] font-black shrink-0 mr-2 ${isUser ? 'text-gold' : pos <= 8 ? 'text-cream/60' : pos >= 17 ? 'text-coral/70' : 'text-cream/25'}`}>
-              {pos}
-            </span>
-
-            {/* Escudo */}
-            <div className="w-[18px] shrink-0 mr-2 flex items-center justify-center">
-              {isUser
-                ? <Image src="/logo.png" alt="" width={16} height={16} className="object-contain opacity-75" />
-                : <TeamShield team={entry.team} size={18} />
-              }
-            </div>
-
-            {/* Nome + era */}
-            <div className="flex-1 min-w-0 flex items-baseline gap-1 mr-1">
-              <span className={`text-[12px] font-bold truncate leading-tight ${isUser ? 'text-gold' : 'text-cream/75'}`}>
-                {teamName}
-              </span>
-              {eraTag && (
-                <span className="text-[8px] text-cream/20 shrink-0 font-mono">{eraTag}</span>
-              )}
-            </div>
-
-            {/* V */}
-            <span className="w-6 text-center text-[11px] text-green/70 tabular-nums shrink-0">{entry.v}</span>
-            {/* E */}
-            <span className="w-6 text-center text-[11px] text-cream/35 tabular-nums shrink-0">{entry.e}</span>
-            {/* D */}
-            <span className="w-6 text-center text-[11px] text-coral/60 tabular-nums shrink-0">{entry.d}</span>
-            {/* SG */}
-            <span className={`w-8 text-center text-[11px] tabular-nums shrink-0 font-mono ${gd > 0 ? 'text-green/80' : gd < 0 ? 'text-coral/80' : 'text-cream/30'}`}>
-              {gd > 0 ? `+${gd}` : gd}
-            </span>
-            {/* PTS */}
-            <span className={`w-8 text-center text-sm font-black tabular-nums shrink-0 ${isUser ? 'text-gold' : 'text-cream/90'}`}>
-              {entry.pts}
-            </span>
-          </div>
-        );
-      })}
-
-      {/* Legenda de zonas */}
-      <div className="flex flex-wrap gap-x-4 gap-y-1.5 px-4 py-3 border-t border-cream/[0.06] bg-navy/30">
-        {[
-          { color: 'bg-gold',      label: 'Campeão' },
-          { color: 'bg-sky-400',   label: 'Libertadores' },
-          { color: 'bg-amber-400', label: 'Sul-Americana' },
-          { color: 'bg-coral',     label: 'Rebaixado' },
-        ].map(z => (
-          <div key={z.label} className="flex items-center gap-1.5">
-            <div className={`w-2 h-2 rounded-full shrink-0 ${z.color}`} />
-            <span className="text-[9px] text-cream/30 uppercase tracking-wide">{z.label}</span>
-          </div>
-        ))}
-      </div>
-
     </div>
   );
 }
@@ -551,14 +441,6 @@ export default function ResultadoPage() {
           </div>
         </div>
 
-        {/* Classificação Geral */}
-        {state.leagueTable && state.leagueTable.length > 0 && (
-          <div className="w-full flex flex-col gap-4">
-            <VintageDivider label="Classificação Geral" />
-            <LeagueTable table={state.leagueTable} />
-          </div>
-        )}
-
         {/* Prêmios da Temporada */}
         {hasAwards && (
           <div className="w-full flex flex-col gap-4">
@@ -591,31 +473,6 @@ export default function ResultadoPage() {
                   shield={awards.goleiro.team}
                 />
               )}
-            </div>
-          </div>
-        )}
-
-        {/* Craque de destaque (maior overall) */}
-        {destaque?.player && (
-          <div className="w-full flex flex-col gap-4">
-            <VintageDivider label="Jogador de Destaque" />
-            <div className="relative bg-navy/60">
-              <div className="absolute inset-0 border border-gold/30" />
-              <div className="absolute inset-[3px] border border-gold/10" />
-              <div className="relative p-5 flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <TeamShield team={destaque.player.team} size={40} className="shrink-0 drop-shadow" />
-                  <div>
-                    <div className="text-lg font-black uppercase tracking-wide text-cream">
-                      {destaque.player.name}
-                    </div>
-                    <div className="text-xs uppercase tracking-widest text-cream/40 mt-1">
-                      {getAbrev(destaque.player.team)} · {destaque.player.era}
-                    </div>
-                  </div>
-                </div>
-                <div className="text-[4.5rem] font-black text-gold leading-none">{destaque.player.overall}</div>
-              </div>
             </div>
           </div>
         )}
