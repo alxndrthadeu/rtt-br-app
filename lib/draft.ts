@@ -65,9 +65,17 @@ export function calculateTeamStats(slots: DraftSlot[]): {
   const atkGroup = filled.filter(s => ATTACK_ROLES.has(s.slot_pos));
   const defGroup = filled.filter(s => DEFENSE_ROLES.has(s.slot_pos));
 
+  // Conta quantos jogadores de cada clube estão no time (indiferente à era)
+  const clubCount = new Map<string, number>();
+  for (const s of filled) clubCount.set(s.player.team, (clubCount.get(s.player.team) ?? 0) + 1);
+
   const groupOvr = (group: typeof filled, bonusMap: Record<string, number>) => {
     if (!group.length) return 0;
-    const total = group.reduce((sum, s) => sum + s.player.overall + (bonusMap[s.player.trait ?? ''] ?? 0), 0);
+    const total = group.reduce((sum, s) => {
+      const traitBonus = bonusMap[s.player.trait ?? ''] ?? 0;
+      const chemBonus  = ((clubCount.get(s.player.team) ?? 1) - 1) * 0.5;
+      return sum + s.player.overall + traitBonus + chemBonus;
+    }, 0);
     return Math.round(total / group.length);
   };
 
