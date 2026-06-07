@@ -79,10 +79,24 @@ function wrapText(ctx: CanvasRenderingContext2D, text: string, maxW: number): st
   return lines;
 }
 
+function sectionDivider(ctx: CanvasRenderingContext2D, label: string, y: number, hex: string, W: number) {
+  ctx.font = '700 22px Arial, Helvetica, sans-serif';
+  ctx.fillStyle = hex + 'BB';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'alphabetic';
+  ctx.fillText(label, W / 2, y);
+  const hw = ctx.measureText(label).width / 2 + 18;
+  ctx.strokeStyle = hex + '44';
+  ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(90, y - 7); ctx.lineTo(W / 2 - hw, y - 7); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(W / 2 + hw, y - 7); ctx.lineTo(W - 90, y - 7); ctx.stroke();
+}
+
 async function buildShareCanvas(
   state: GameState,
   rank: string,
   awards: AwardInfo,
+  drafts: Draft[],
 ): Promise<HTMLCanvasElement> {
   const W = 1080, H = 1920;
   const canvas = document.createElement('canvas');
@@ -101,8 +115,7 @@ async function buildShareCanvas(
   ctx.fillStyle = bgGrad;
   ctx.fillRect(0, 0, W, H);
 
-  // Rank glow
-  const glow = ctx.createRadialGradient(W / 2, 640, 0, W / 2, 640, 650);
+  const glow = ctx.createRadialGradient(W / 2, 520, 0, W / 2, 520, 520);
   glow.addColorStop(0, hex + '28');
   glow.addColorStop(1, 'transparent');
   ctx.fillStyle = glow;
@@ -127,40 +140,40 @@ async function buildShareCanvas(
   ctx.fillStyle = 'rgba(245,240,232,0.25)';
   ctx.fillText('MINHA CAMPANHA', W / 2, 212);
 
-  // Divider
   ctx.strokeStyle = hex + '44';
   ctx.lineWidth = 1;
   ctx.beginPath(); ctx.moveTo(130, 246); ctx.lineTo(W - 130, 246); ctx.stroke();
 
-  // ── Rank letter ──────────────────────────────────────────────────────────────
-  const rankGrad = ctx.createLinearGradient(W / 2 - 300, 300, W / 2 + 300, 780);
+  // ── Rank letter (420px — compact to make room for team) ──────────────────────
+  const rankGrad = ctx.createLinearGradient(W / 2 - 240, 260, W / 2 + 240, 630);
   rankGrad.addColorStop(0, gradTop);
   rankGrad.addColorStop(1, gradBot);
-  ctx.font = '900 540px Arial Black, Arial, sans-serif';
+  ctx.font = '900 420px Arial Black, Arial, sans-serif';
   ctx.fillStyle = rankGrad;
   ctx.textAlign = 'center';
   ctx.textBaseline = 'alphabetic';
-  ctx.fillText(rank, W / 2, 780);
+  ctx.fillText(rank, W / 2, 630);
 
-  // ── Rank label ───────────────────────────────────────────────────────────────
-  ctx.font = '700 52px Arial, Helvetica, sans-serif';
+  // ── Rank label + subtitle ────────────────────────────────────────────────────
+  ctx.font = '700 44px Arial, Helvetica, sans-serif';
   ctx.fillStyle = 'rgba(245,240,232,0.88)';
   ctx.textAlign = 'center';
-  ctx.fillText((RANK_LABELS[rank] ?? '').toUpperCase(), W / 2, 860);
+  ctx.fillText((RANK_LABELS[rank] ?? '').toUpperCase(), W / 2, 696);
 
-  ctx.font = '400 30px Arial, Helvetica, sans-serif';
+  ctx.font = '400 26px Arial, Helvetica, sans-serif';
   ctx.fillStyle = 'rgba(245,240,232,0.35)';
   const sub = RANK_SUBTITLES[rank] ?? '';
   const subLines = wrapText(ctx, sub, W - 240);
-  subLines.forEach((line, i) => ctx.fillText(line, W / 2, 912 + i * 42));
+  subLines.forEach((line, i) => ctx.fillText(line, W / 2, 746 + i * 40));
 
   // ── Stats bar ────────────────────────────────────────────────────────────────
-  const statsY = 1010;
+  const statsY = 746 + subLines.length * 40 + 30;
+  const statsH = 150;
   ctx.fillStyle = 'rgba(255,255,255,0.03)';
-  ctx.fillRect(90, statsY, W - 180, 190);
+  ctx.fillRect(90, statsY, W - 180, statsH);
   ctx.strokeStyle = 'rgba(245,240,232,0.07)';
   ctx.lineWidth = 1;
-  ctx.strokeRect(90, statsY, W - 180, 190);
+  ctx.strokeRect(90, statsY, W - 180, statsH);
 
   const statItems: { label: string; value: number }[] = [
     { label: 'PTS', value: state.pts },
@@ -172,17 +185,57 @@ async function buildShareCanvas(
   const sw = (W - 180) / statItems.length;
   statItems.forEach((s, i) => {
     const sx = 90 + i * sw + sw / 2;
-    ctx.font = '900 76px Arial Black, Arial, sans-serif';
+    ctx.font = '900 64px Arial Black, Arial, sans-serif';
     ctx.fillStyle = i === 0 ? hex : 'rgba(245,240,232,0.85)';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'alphabetic';
-    ctx.fillText(String(s.value), sx, statsY + 118);
-    ctx.font = '600 26px Arial, Helvetica, sans-serif';
+    ctx.fillText(String(s.value), sx, statsY + 96);
+    ctx.font = '600 22px Arial, Helvetica, sans-serif';
     ctx.fillStyle = 'rgba(245,240,232,0.3)';
-    ctx.fillText(s.label, sx, statsY + 162);
+    ctx.fillText(s.label, sx, statsY + 132);
   });
 
-  // ── Award cards ──────────────────────────────────────────────────────────────
+  // ── Team section ──────────────────────────────────────────────────────────────
+  const teamLabelY = statsY + statsH + 50;
+  sectionDivider(ctx, 'MEU TIME', teamLabelY, hex, W);
+
+  const sorted = [...drafts].filter(d => d.player).sort((a, b) => a.slot_index - b.slot_index);
+  const rowH = 36;
+  sorted.forEach((d, i) => {
+    const ry = teamLabelY + 16 + i * rowH;
+
+    if (i % 2 === 0) {
+      ctx.fillStyle = 'rgba(255,255,255,0.02)';
+      ctx.fillRect(90, ry, W - 180, rowH);
+    }
+
+    // Position badge
+    ctx.fillStyle = hex + '1A';
+    ctx.fillRect(90, ry + 2, 58, rowH - 4);
+    ctx.font = '700 17px Arial, Helvetica, sans-serif';
+    ctx.fillStyle = hex + 'CC';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(d.slot_pos, 119, ry + rowH / 2);
+
+    // Player name (last word / mononym)
+    ctx.font = '500 22px Arial, Helvetica, sans-serif';
+    ctx.fillStyle = 'rgba(245,240,232,0.82)';
+    ctx.textAlign = 'left';
+    ctx.fillText(d.player!.name.split(' ').at(-1)!, 162, ry + rowH / 2);
+
+    // Overall
+    ctx.font = '700 19px Arial, Helvetica, sans-serif';
+    ctx.fillStyle = 'rgba(245,240,232,0.32)';
+    ctx.textAlign = 'right';
+    ctx.fillText(String(d.player!.overall), W - 90, ry + rowH / 2);
+  });
+
+  // ── Awards section ────────────────────────────────────────────────────────────
+  const teamEndY   = teamLabelY + 16 + sorted.length * rowH;
+  const awardsLabelY = teamEndY + 48;
+  sectionDivider(ctx, 'PRÊMIOS', awardsLabelY, hex, W);
+
   const awardList = [
     {
       icon: '⚽',
@@ -200,33 +253,36 @@ async function buildShareCanvas(
     },
     {
       icon: '🧤',
-      label: 'MELHOR GOLEIRO',
+      label: 'GOLEIRO',
       value: awards.goleiro
         ? `${awards.goleiro.name.split(' ').at(-1)} · ${awards.goleiro.cleanSheets} limpos`
         : '—',
     },
   ];
 
+  const awardH = 90;
+  const awardGap = 8;
   awardList.forEach((a, i) => {
-    const ay = 1254 + i * 185;
+    const ay = awardsLabelY + 18 + i * (awardH + awardGap);
     ctx.fillStyle = 'rgba(255,255,255,0.04)';
-    ctx.fillRect(90, ay, W - 180, 160);
+    ctx.fillRect(90, ay, W - 180, awardH);
     ctx.strokeStyle = hex + '2A';
     ctx.lineWidth = 1;
-    ctx.strokeRect(90, ay, W - 180, 160);
+    ctx.strokeRect(90, ay, W - 180, awardH);
 
-    ctx.font = '44px sans-serif';
+    ctx.font = '30px sans-serif';
     ctx.textAlign = 'left';
-    ctx.textBaseline = 'alphabetic';
-    ctx.fillText(a.icon, 126, ay + 86);
+    ctx.textBaseline = 'middle';
+    ctx.fillText(a.icon, 122, ay + awardH / 2);
 
-    ctx.font = '600 22px Arial, Helvetica, sans-serif';
+    ctx.font = '600 18px Arial, Helvetica, sans-serif';
     ctx.fillStyle = hex + 'BB';
-    ctx.fillText(a.label, 200, ay + 58);
+    ctx.textBaseline = 'alphabetic';
+    ctx.fillText(a.label, 178, ay + 32);
 
-    ctx.font = '700 42px Arial Black, Arial, sans-serif';
+    ctx.font = '700 28px Arial Black, Arial, sans-serif';
     ctx.fillStyle = 'rgba(245,240,232,0.9)';
-    ctx.fillText(a.value, 200, ay + 115);
+    ctx.fillText(a.value, 178, ay + 72);
   });
 
   // ── Footer ───────────────────────────────────────────────────────────────────
@@ -245,8 +301,9 @@ export default function ResultadoPage() {
   const router = useRouter();
   const [state, setState]     = useState<GameState | null>(null);
   const [rank, setRank]       = useState('');
-  const [destaque, setDestaque] = useState<Draft | null>(null);
-  const [awards, setAwards]   = useState<AwardInfo>({ artilheiro: null, goleiro: null, craque: null });
+  const [destaque, setDestaque]   = useState<Draft | null>(null);
+  const [allDrafts, setAllDrafts] = useState<Draft[]>([]);
+  const [awards, setAwards]       = useState<AwardInfo>({ artilheiro: null, goleiro: null, craque: null });
   const [saved, setSaved]     = useState(false);
   const [sharing, setSharing] = useState(false);
 
@@ -268,6 +325,8 @@ export default function ResultadoPage() {
     const cleanSheets = gs.matches.filter(m => m.opp_goals === 0).length;
 
     getDraft(gs.gameId).then((drafts) => {
+      setAllDrafts(drafts);
+
       // Destaque (maior overall)
       const best = drafts.reduce<Draft | null>((prev, curr) =>
         (curr.player?.overall ?? 0) > (prev?.player?.overall ?? 0) ? curr : prev, null);
@@ -333,7 +392,7 @@ export default function ResultadoPage() {
     if (!state || !rank || sharing) return;
     setSharing(true);
     try {
-      const canvas = await buildShareCanvas(state, rank, awards);
+      const canvas = await buildShareCanvas(state, rank, awards, allDrafts);
       canvas.toBlob(async (blob) => {
         if (!blob) return;
         const file = new File([blob], 'minha-campanha-rtt.png', { type: 'image/png' });
