@@ -227,12 +227,20 @@ export default function SetupPage() {
       </div>
 
       {/* Footer stamp */}
-      <footer className="flex items-center justify-center py-4 gap-3 border-t border-gold/20">
-        <div className="h-px w-8 bg-gold/40" />
-        <span className="text-[8px] tracking-[0.5em] uppercase text-ink/40 dark:text-gold/35 font-bold">
-          Alcance o Topo · Est. 2026
-        </span>
-        <div className="h-px w-8 bg-gold/40" />
+      <footer className="flex flex-col items-center py-4 gap-2 border-t border-gold/20">
+        <div className="flex items-center gap-3">
+          <div className="h-px w-8 bg-gold/40" />
+          <span className="text-[8px] tracking-[0.5em] uppercase text-ink/40 dark:text-gold/35 font-bold">
+            Alcance o Topo · Est. 2026
+          </span>
+          <div className="h-px w-8 bg-gold/40" />
+        </div>
+        <a
+          href="/lgpd"
+          className="text-[8px] tracking-[0.3em] uppercase text-ink/20 dark:text-cream/15 hover:text-ink/50 dark:hover:text-cream/40 transition-colors font-bold"
+        >
+          Privacidade & LGPD
+        </a>
       </footer>
 
     </main>
